@@ -5,7 +5,7 @@ from typing import Any, Optional, Tuple  # noqa
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from controllable_nca.sample_pool import SamplePool
+from sample_pool import SamplePool
 
 
 class NCATrainer:

@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from controllable_nca.utils import build_conv2d_net
-
 class ImageEncoder(nn.Module):
     def __init__(self, embedding_dim, channels):
         super(ImageEncoder, self).__init__()
