@@ -28,8 +28,12 @@ class ImageEncoder(nn.Module):
         self.laplacian = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
         self.laplacian.weight = nn.Parameter(laplacian_weight, requires_grad=False)
 
-        # convolution to get embeddings
-        self.embedding_conv = nn.Conv2d(channels + 3, embedding_dim, kernel_size=3, padding=1)
+        # convolutions to get embeddings
+        self.embed = nn.Sequential(
+            nn.Conv2d(channels + 3, embedding_dim, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(embedding_dim, embedding_dim, kernel_size=3, padding=1, bias=False)
+        )
 
 
     def forward(self, x):
@@ -51,7 +55,7 @@ class ImageEncoder(nn.Module):
         # print(f"{sobel_x_out.shape=}, {sobel_y_out.shape=}, {laplacian_out.shape=}, {blurred_out.shape=}, {output.shape=}")
 
         # applying convolution to get pixelwise embeddings
-        output = self.embedding_conv(output)
+        output = self.embed(output)
         return output
 
 
