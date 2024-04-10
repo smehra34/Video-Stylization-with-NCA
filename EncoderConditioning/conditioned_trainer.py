@@ -157,5 +157,6 @@ class ConditionedNCATrainer(NCATrainer):
             # Place outputs back in the pool.
             self.update_pool(idxs, outputs, targets)
             description = "--".join(["{}:{}".format(k, metrics[k]) for k in metrics])
+            description = f"Epoch {i}/{epochs}: {description}"
             bar.set_description(description)
             self.emit_metrics(i, batch, outputs, targets, loss, metrics=metrics)

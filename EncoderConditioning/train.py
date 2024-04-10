@@ -43,4 +43,4 @@ if __name__ == "__main__":
     try:
         trainer.train(batch_size=8, epochs=100000)
     except KeyboardInterrupt:
-        nca.save("ConditionedNCA_{}.pt".format(datetime.now()))
+        nca.save("models/ConditionedNCA_{}.pt".format(datetime.now()))
