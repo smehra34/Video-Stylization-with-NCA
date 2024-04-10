@@ -12,7 +12,7 @@ class ConditioningDataset(Dataset):
 
         # get a list of paths to the images in the data directory
         images = [os.path.join(data_dir, f) for f in os.listdir(data_dir)
-                        if os.path.splitext(f)[-1] in ['.jpg', '.png']]
+                        if os.path.splitext(f)[-1] in ['.jpg', '.png', '.jpeg']]
         # load all images
         self.images = torch.stack([load_image(im_path, image_size) for im_path in images], dim=0)
 
@@ -26,7 +26,7 @@ class ConditioningDataset(Dataset):
     def __getitem__(self, idx):
         if isinstance(idx, int):
             return self.images[idx : idx + 1].clone(), idx
-        return self.images[idx].clone(), idx
+        return self.images[idx].clone()
 
     def __len__(self):
         return self.num_samples
