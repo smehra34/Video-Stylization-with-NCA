@@ -25,7 +25,7 @@ class ConditioningDataset(Dataset):
 
     def __getitem__(self, idx):
         if isinstance(idx, int):
-            return self.images[idx : idx + 1].clone(), idx
+            return self.images[idx : idx + 1].clone()
         return self.images[idx].clone()
 
     def __len__(self):
