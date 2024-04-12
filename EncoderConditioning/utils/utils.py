@@ -25,6 +25,16 @@ def load_image(img_path, size=64):
     return img_tensor
 
 
+def load_target_style_image(path, size=64):
+
+    img = Image.open(path).convert('RGB')
+    return img.resize((size, size), Image.LANCZOS)
+
+
+def rgb(x):
+    return torch.clip(x[:, :3], 0.0, 1.0)
+
+
 # taken from https://github.com/shyamsn97/controllable-ncas/blob/master/controllable_nca/utils.py
 def create_2d_circular_mask(h, w, center=None, radius=3):
 

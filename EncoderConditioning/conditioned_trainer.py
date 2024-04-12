@@ -21,6 +21,7 @@ from nca import ConditionedNCA
 from sample_pool import SamplePool
 from trainer import NCATrainer
 from utils.utils import create_2d_circular_mask
+from utils.loss import StyleLoss
 
 
 class ConditionedNCATrainer(NCATrainer):
@@ -28,6 +29,7 @@ class ConditionedNCATrainer(NCATrainer):
         self,
         nca: ConditionedNCA,
         target_dataset: ConditioningDataset,
+        target_style_image: np.ndarray,
         nca_steps=[48, 96],
         lr: float = 2e-3,
         pool_size: int = 512,
@@ -56,10 +58,16 @@ class ConditionedNCATrainer(NCATrainer):
             self.optimizer, [5000], gamma=0.3
         )
 
+        self.style_loss = StyleLoss(target_style_image, self.num_target_channels, self.device)
+
     def loss(self, x, targets):
-        return F.mse_loss(
+
+        style_loss = self.style_loss.calc_loss(x)
+        content_loss = F.mse_loss(
             x[:, : self.num_target_channels, :, :], targets, reduction="none"
-        ).mean(dim=(1, 2, 3))
+        ).mean()
+        return style_loss, content_loss
+
 
     def emit_metrics(self, i: int, batch, outputs, targets, loss, metrics={}):
         with torch.no_grad():
@@ -112,7 +120,8 @@ class ConditionedNCATrainer(NCATrainer):
         num_steps = random.randint(self.min_steps, self.max_steps)
         batch = self.nca.grow(batch, num_steps=num_steps, goal=targets)
         clip_loss = torch.mean(batch - torch.clip(batch, -10.0, 10.0))
-        loss = self.loss(batch, targets).mean()
+        style_loss, content_loss = self.loss(batch, targets)
+        loss = 0.2 * style_loss + content_loss
         self.optimizer.zero_grad()
         loss.backward()
         # torch.nn.utils.clip_grad_norm_(self.nca.parameters(), 100.0)
@@ -131,6 +140,8 @@ class ConditionedNCATrainer(NCATrainer):
             loss.item(),
             {
                 "loss": loss.item(),
+                "style_loss": style_loss.item(),
+                "content_loss": content_loss.item(),
                 "log10loss": math.log10(loss.item() + 1e-5),
                 "clip_loss": clip_loss.item(),
                 **grad_dict,
