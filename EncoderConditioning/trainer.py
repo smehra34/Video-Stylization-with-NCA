@@ -6,14 +6,14 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from sample_pool import SamplePool
-
+import os
 
 class NCATrainer:
     def __init__(
         self,
         pool_size: int = 256,
         num_damaged: int = 0,
-        log_base_path="tensorboard_logs",
+        log_base_path: str = "test",
         device: Optional[torch.device] = None,
     ):
         self.pool_size = pool_size
@@ -21,8 +21,9 @@ class NCATrainer:
         self.num_damaged = num_damaged
 
         self.log_base_path = log_base_path
-        self.log_path = "{}/{}".format(log_base_path, datetime.now())
-        print("Writing to {}".format(self.log_path))
+        self.log_path = os.path.join(log_base_path, 'tensorboard')
+
+        print("Writing tensorboard logs to {}".format(self.log_path))
         self.train_writer = SummaryWriter(self.log_path, flush_secs=10)
         self.sort_loss = self.loss
         self.device = device

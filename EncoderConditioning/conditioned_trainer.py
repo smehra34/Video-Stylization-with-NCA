@@ -34,7 +34,7 @@ class ConditionedNCATrainer(NCATrainer):
         lr: float = 2e-3,
         pool_size: int = 512,
         num_damaged: int = 0,
-        log_base_path: str = "tensorboard_logs",
+        log_base_path: str = "test",
         damage_radius: int = 3,
         appearance_loss_type: str = 'OT',
         appearance_loss_weight: float = 1.0,

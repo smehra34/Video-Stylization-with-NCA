@@ -1,5 +1,6 @@
 **/events.out.tfevents*
 **.pt
+**.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
