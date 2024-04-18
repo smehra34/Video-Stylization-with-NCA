@@ -21,7 +21,7 @@ from nca import ConditionedNCA
 from sample_pool import SamplePool
 from trainer import NCATrainer
 from utils.utils import create_2d_circular_mask
-from utils.loss import StyleLoss
+from loss.loss import Loss
 
 
 class ConditionedNCATrainer(NCATrainer):
@@ -36,6 +36,10 @@ class ConditionedNCATrainer(NCATrainer):
         num_damaged: int = 0,
         log_base_path: str = "tensorboard_logs",
         damage_radius: int = 3,
+        appearance_loss_type: str = 'OT',
+        appearance_loss_weight: float = 1.0,
+        content_loss_weight: float = 1.0,
+        overflow_loss_weight: float = 1.0,
         device: Optional[torch.device] = None,
     ):
         super(ConditionedNCATrainer, self).__init__(
@@ -58,16 +62,13 @@ class ConditionedNCATrainer(NCATrainer):
             self.optimizer, [5000], gamma=0.3
         )
 
-        self.style_loss = StyleLoss(target_style_image, self.num_target_channels, self.device)
-
-    def loss(self, x, targets):
-
-        style_loss = self.style_loss.calc_loss(x)
-        content_loss = F.mse_loss(
-            x[:, : self.num_target_channels, :, :], targets, reduction="none"
-        ).mean()
-        return style_loss, content_loss
-
+        print(device)
+        self.loss = Loss(device=self.device,
+                         content_loss_weight=content_loss_weight,
+                         overflow_loss_weight=overflow_loss_weight,
+                         appearance_loss_weight=appearance_loss_weight,
+                         appearance_loss_type=appearance_loss_type,
+                         target_style_image=target_style_image)
 
     def emit_metrics(self, i: int, batch, outputs, targets, loss, metrics={}):
         with torch.no_grad():
@@ -119,9 +120,11 @@ class ConditionedNCATrainer(NCATrainer):
     def train_batch(self, batch, targets):
         num_steps = random.randint(self.min_steps, self.max_steps)
         batch = self.nca.grow(batch, num_steps=num_steps, goal=targets)
-        clip_loss = torch.mean(batch - torch.clip(batch, -10.0, 10.0))
-        style_loss, content_loss = self.loss(batch, targets)
-        loss = 0.2 * style_loss + content_loss
+
+        loss_input_dict = {'target_images': targets, 'nca_state': batch,
+                           'generated_images': batch[:, : self.num_target_channels, :, :]}
+        loss, loss_summary = self.loss(loss_input_dict)
+
         self.optimizer.zero_grad()
         loss.backward()
         # torch.nn.utils.clip_grad_norm_(self.nca.parameters(), 100.0)
@@ -140,10 +143,8 @@ class ConditionedNCATrainer(NCATrainer):
             loss.item(),
             {
                 "loss": loss.item(),
-                "style_loss": style_loss.item(),
-                "content_loss": content_loss.item(),
+                **loss_summary,
                 "log10loss": math.log10(loss.item() + 1e-5),
-                "clip_loss": clip_loss.item(),
                 **grad_dict,
             },
         )
@@ -158,9 +159,9 @@ class ConditionedNCATrainer(NCATrainer):
             idxs = random.sample(range(len(self.pool)), batch_size)
 
             with torch.no_grad():
-                targets = self.sample_targets(idxs)
-                batch = self.sample_batch(idxs, self.pool)
-                batch[:2] = self.nca.generate_seed(2).to(self.device)
+                targets = self.sample_targets(idxs).to(self.device)
+                batch = self.sample_batch(idxs, self.pool).to(self.device)
+                batch[:2] = self.nca.generate_seed(2)
 
             outputs, loss, metrics = self.train_batch(batch, targets)
             # train more

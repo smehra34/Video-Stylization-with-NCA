@@ -37,6 +37,10 @@ if __name__ == "__main__":
             num_damaged = 0,
             log_base_path = "tensorboard_logs",
             damage_radius = 3,
+            appearance_loss_type = 'OT',
+            appearance_loss_weight = 1.0,
+            content_loss_weight = .1 ,
+            overflow_loss_weight = 1.0,
             device = device,
         )
 
@@ -44,5 +48,6 @@ if __name__ == "__main__":
 
     try:
         trainer.train(batch_size=8, epochs=100000)
-    except (KeyboardInterrupt, torch.cuda.OutOfMemoryError):
+    except (KeyboardInterrupt, torch.cuda.OutOfMemoryError) as e:
+        print(e)
         nca.save("models/ConditionedNCA_{}.pt".format(datetime.now()))
