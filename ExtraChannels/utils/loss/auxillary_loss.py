@@ -5,6 +5,8 @@ import torch.nn.functional as F
 import torchvision.models as torch_models
 import numpy as np
 
+from content_loss import ContentLoss
+
 
 class AuxillaryLoss(torch.nn.Module):
     def __init__(self, args):
@@ -14,7 +16,8 @@ class AuxillaryLoss(torch.nn.Module):
         args.texture_slw_weight = 0.0
         args.texture_ot_weight = 0.0
         args.texture_gram_weight = 0.0
-        args.mse_weight = 0.0
+        args.texture_mse_weight = 0.0
+        args.texture_vgg_weight = 0.0
         if args.auxillary_loss_type == 'OT':
             args.texture_ot_weight = 1.0
         elif args.auxillary_loss_type == 'SlW':
@@ -22,12 +25,15 @@ class AuxillaryLoss(torch.nn.Module):
         elif args.auxillary_loss_type == 'Gram':
             args.texture_gram_weight = 1.0
         elif args.auxillary_loss_type == 'MSE':
-            args.mse_weight = 1.0
+            args.texture_mse_weight = 1.0
+        elif args.auxillary_loss_type == 'VGG':
+            args.texture_vgg_weight = 1.0
 
         self.slw_weight = args.texture_slw_weight
         self.ot_weight = args.texture_ot_weight
         self.gram_weight = args.texture_gram_weight
-        self.mse_weight = args.mse_weight
+        self.mse_weight = args.texture_mse_weight
+        self.vgg_weight = args.texture_vgg_weight
 
         self._create_losses()
 
@@ -50,6 +56,10 @@ class AuxillaryLoss(torch.nn.Module):
         if self.mse_weight != 0:
             self.loss_mapper["MSE"] = MSELoss_(self.args)
             self.loss_weights["MSE"] = self.mse_weight
+
+        if self.mse_weight != 0:
+            self.loss_mapper["VGG"] = ContentLoss(self.args)
+            self.loss_weights["VGG"] = self.vgg_weight
 
     def update_losses_to_apply(self, epoch):
         pass
