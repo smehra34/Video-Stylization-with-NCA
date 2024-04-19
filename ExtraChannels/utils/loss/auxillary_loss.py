@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torchvision.models as torch_models
 import numpy as np
 
-from content_loss import ContentLoss
+from .content_loss import ContentLoss
 
 
 class AuxillaryLoss(torch.nn.Module):
@@ -57,7 +57,7 @@ class AuxillaryLoss(torch.nn.Module):
             self.loss_mapper["MSE"] = MSELoss_(self.args)
             self.loss_weights["MSE"] = self.mse_weight
 
-        if self.mse_weight != 0:
+        if self.vgg_weight != 0:
             self.loss_mapper["VGG"] = ContentLoss(self.args)
             self.loss_weights["VGG"] = self.vgg_weight
 

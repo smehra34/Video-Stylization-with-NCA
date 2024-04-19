@@ -9,12 +9,13 @@ import numpy as np
 
 
 class ContentLoss(torch.nn.Module):
-    def __init__(self, device):
+    def __init__(self, args):
         super(ContentLoss, self).__init__()
 
-        self.device = device
+        self.args = args
+        self.device = self.args.DEVICE
         self.loss_fn = nn.MSELoss(reduction='mean')
-        self.vgg16 = torch_models.vgg16(pretrained=True).features.to(device)
+        self.vgg16 = torch_models.vgg16(pretrained=True).features.to(self.device)
 
     def forward(self, target_images, generated_images):
         loss = 0.0
