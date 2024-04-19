@@ -53,3 +53,10 @@ def create_2d_circular_mask(h, w, center=None, radius=3):
 
     mask = dist_from_center <= radius
     return mask
+
+# https://stackoverflow.com/questions/2352181/how-to-use-a-dot-to-access-members-of-dictionary
+class dotdict(dict):
+    """dot.notation access to dictionary attributes"""
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__

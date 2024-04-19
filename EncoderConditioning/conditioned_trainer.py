@@ -41,6 +41,7 @@ class ConditionedNCATrainer(NCATrainer):
         content_loss_weight: float = 1.0,
         overflow_loss_weight: float = 1.0,
         device: Optional[torch.device] = None,
+        visualiser: Optional = None
     ):
         super(ConditionedNCATrainer, self).__init__(
             pool_size, num_damaged, log_base_path, device
@@ -61,6 +62,8 @@ class ConditionedNCATrainer(NCATrainer):
         self.lr_sched = torch.optim.lr_scheduler.MultiStepLR(
             self.optimizer, [5000], gamma=0.3
         )
+
+        self.visualiser = visualiser
 
         print(device)
         self.loss = Loss(device=self.device,
@@ -171,4 +174,8 @@ class ConditionedNCATrainer(NCATrainer):
             description = "--".join(["{}:{}".format(k, metrics[k]) for k in metrics])
             description = f"Epoch {i}/{epochs}: {description}"
             bar.set_description(description)
-            self.emit_metrics(i, batch, outputs, targets, loss, metrics=metrics)
+            self.emit_metrics(i, batch, outputs, targets, loss, metrics)
+
+            if self.visualiser is not None:
+                self.visualiser.step(i, self.to_rgb(batch), self.to_rgb(outputs),
+                                     self.to_rgb(targets), metrics)
