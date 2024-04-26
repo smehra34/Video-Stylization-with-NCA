@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import numpy as np
 from torchvision import transforms
 from PIL import Image, ImageSequence
@@ -162,3 +163,37 @@ def get_middle_feature_vgg(args, imgs, vgg_model, flatten=False, include_image_a
             else:
                 features.append(x)
     return features
+
+
+class RGBToEdges(nn.Module):
+
+    def __init__(self):
+        super(RGBToEdges, self).__init__()
+        
+        # sobel filters
+        sobel_x_weight = torch.tensor([[[[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]]], dtype=torch.float32)
+        sobel_y_weight = torch.tensor([[[[-1, -2, -1], [0, 0, 0], [1, 2, 1]]]], dtype=torch.float32)
+        self.sobel_x = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        self.sobel_y = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        self.sobel_x.weight = nn.Parameter(sobel_x_weight, requires_grad=False)
+        self.sobel_y.weight = nn.Parameter(sobel_y_weight, requires_grad=False)
+
+        # laplacian filter
+        laplacian_weight = torch.tensor([[[[1, 2, 1], [2, -12, 2], [1, 2, 1]]]], dtype=torch.float32)
+        self.laplacian = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        self.laplacian.weight = nn.Parameter(laplacian_weight, requires_grad=False)
+
+    def forward(self, x):
+
+        # convert input to grayscale (for sobel and laplacian filters)
+        x_gray = torch.mean(x, dim=1, keepdim=True)
+
+        sobel_x_out = self.sobel_x(x_gray)
+        sobel_y_out = self.sobel_y(x_gray)
+        laplacian_out = self.laplacian(x_gray)
+
+        # stack the transformations
+        output = torch.cat((sobel_x_out, sobel_y_out, laplacian_out), dim=1)
+
+        return output
+        
