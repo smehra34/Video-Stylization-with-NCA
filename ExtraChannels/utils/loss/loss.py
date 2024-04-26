@@ -5,9 +5,11 @@ from utils.loss.vector_field_loss import VectorFieldMotionLoss
 from utils.loss.appearance_loss import AppearanceLoss
 from utils.loss.video_motion_loss import VideoMotionLoss
 from utils.loss.auxillary_loss import AuxillaryLoss
+from utils.loss.style_consistency_loss import StyleConsistencyLoss
+
 
 class Loss(torch.nn.Module):
-    def __init__(self, args):
+    def __init__(self, args, nca_model):
         super(Loss, self).__init__()
         self.args = args
 
@@ -19,6 +21,10 @@ class Loss(torch.nn.Module):
         self.video_motion_loss_weight = getattr(args, "video_motion_loss_weight", 0.0)
 
         self.overflow_loss_weight = getattr(args, "overflow_loss_weight", 0.0)
+
+        self.style_consistency_loss_weight = getattr(args, "style_consistency_loss_weight", 0.0)
+
+        self.nca_model = nca_model
 
         self._create_losses()
 
@@ -52,6 +58,10 @@ class Loss(torch.nn.Module):
         if self.video_motion_loss_weight != 0:
             self.loss_mapper["video_motion"] = VideoMotionLoss(self.args)
             self.loss_weights["video_motion"] = self.video_motion_loss_weight
+
+        if self.style_consistency_loss_weight != 0:
+            self.loss_mapper["style_consistency"] = StyleConsistencyLoss(self.args, self.nca_model)
+            self.loss_weights["style_consistency"] = self.style_consistency_loss_weight
 
     def set_loss_weight(self, appearance_loss_log=None, loss_name='video_motion', loss_num=10.0, medium_mt=None):
         if loss_name == 'video_motion':
