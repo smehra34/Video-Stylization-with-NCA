@@ -25,7 +25,7 @@ from IPython.display import clear_output, Markdown
 
 import argparse
 from helper import *
-from utils.misc.video_utils import save_video
+from utils.misc.video_utils import evaluate_folder_of_videos, generate_control_videos, save_video
 
 warnings.filterwarnings('ignore')
 warnings.simplefilter('ignore')
@@ -309,17 +309,14 @@ def main():
     video_save_path = f'experiments/experiment_{experiment_index}/videos/'
     ensure_dir(video_save_path)
     ## Generate Videos
-    ## CORGI
-    save_video(f"{video_save_path}/corgi", target_vid_path='data/Reference/corgi.gif', size_factor=2.0, step_n=int(args.nca_base_num_steps), steps_per_frame=10, is_style_image=False, nca_model=nca_model, nca_size_x=nca_size_x, nca_size_y=nca_size_y, DEVICE=DEVICE, autoplay=False)
-    ##GOT
-    save_video(f"{video_save_path}/got", target_vid_path='data/Reference/got.gif', size_factor=3.0, step_n=int(args.nca_base_num_steps), steps_per_frame=2, is_style_image=False, nca_model=nca_model, nca_size_x=nca_size_x, nca_size_y=nca_size_y, DEVICE=DEVICE, autoplay=False)
-    ##MR BEAN
-    save_video(f"{video_save_path}/mr_bean", target_vid_path='data/Reference/mr-bean.gif', size_factor=2.0, step_n=int(args.nca_base_num_steps), steps_per_frame=2, is_style_image=False, nca_model=nca_model, nca_size_x=nca_size_x, nca_size_y=nca_size_y, DEVICE=DEVICE, autoplay=False)
-    ##STARRY NIGHT
-    save_video(f"{video_save_path}/{args.style_name}", target_vid_path=f'data/Reference/{args.style_name}.gif', size_factor=2.0, step_n=int(args.nca_base_num_steps), steps_per_frame=2, is_style_image=False, nca_model=nca_model, nca_size_x=nca_size_x, nca_size_y=nca_size_y, DEVICE=DEVICE, autoplay=False)
-    # Raed Webcam
-    save_video(f"{video_save_path}/raed_webcam", target_vid_path='data/Reference/raed.mp4', size_factor=2.0, step_n=int(args.nca_base_num_steps), steps_per_frame=2, is_style_image=False, nca_model=nca_model, nca_size_x=nca_size_x, nca_size_y=nca_size_y, DEVICE=DEVICE, autoplay=False)
-    # Black background
-    save_video(f"{video_save_path}/black_background", target_vid_path='data/Reference/black_background.mp4', size_factor=2.0, step_n=int(args.nca_base_num_steps), steps_per_frame=2, is_style_image=False, nca_model=nca_model, nca_size_x=nca_size_x, nca_size_y=nca_size_y, DEVICE=DEVICE, autoplay=False)
+    generate_control_videos(style_img_path, video_save_path, size_factor=2.0,
+                              step_n=int(args.nca_base_num_steps), steps_per_frame=1,
+                              nca_model=nca_model, nca_size_x=nca_size_x,
+                              nca_size_y=nca_size_y, DEVICE=DEVICE)
+    evaluate_folder_of_videos('data/Evaluation', video_save_path, size_factor=2.0,
+                              step_n=int(args.nca_base_num_steps), steps_per_frame=1,
+                              nca_model=nca_model, nca_size_x=nca_size_x,
+                              nca_size_y=nca_size_y, DEVICE=DEVICE)
+
 if __name__ == '__main__':
     main()
