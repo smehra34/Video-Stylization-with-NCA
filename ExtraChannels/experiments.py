@@ -262,6 +262,7 @@ def main():
                     # Assuming 'batch_loss', 'batch_loss_log_dict', and 'summary' are obtained during your training loop
                 wandb.log({
                     "batch_loss": batch_loss.item(),  # Log the scalar value of batch loss
+                    "epoch": i,
                     **display_dict,            # Expand the dictionary to log each component separately
                 })
 
