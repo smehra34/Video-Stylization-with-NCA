@@ -2,6 +2,7 @@ import os
 from functools import partial
 
 import torch
+import gdown
 
 import progressbar
 
@@ -23,27 +24,25 @@ def show_progress(block_num, block_size, total_size):
 
 
 def _load_MSOEmultiscale_model(model_name, models_path, download=False):
-    assert model_name == 'two_stream_dynamic_model'
-    if not os.path.exists(f'{models_path}/two_stream/{model_name}.pth'):
+    model_directory = os.path.join(models_path, 'two_stream')
+    model_path = os.path.join(model_directory, f'{model_name}.pth')
+
+    # Ensure the model directory exists
+    os.makedirs(model_directory, exist_ok=True)
+
+    if not os.path.exists(model_path):
         download = True
 
     if download:
-
-        if os.path.exists(f'{models_path}/two_stream/{model_name}.pth'):
-            os.system(f"rm -rf {models_path}/two_stream")
-        import gdown
+        # Define the Google Drive URL and output path
         url = 'https://drive.google.com/uc?id=10qoSx0P3TJzf17bUN42x1ZAFNjr-J69f'
-        output = f'{models_path}/two_stream/{model_name}.pth'
-        os.system(f"mkdir -p {models_path}/two_stream/")
-        gdown.download(url, output, quiet=False)
+        gdown.download(url, model_path, quiet=False)
 
     from models.MSOEmultiscale import MSOEmultiscale
-
     model = MSOEmultiscale()
-    states_dict = torch.load(f'{models_path}/two_stream/{model_name}.pth')
-    model.load_state_dict(states_dict)
+    state_dict = torch.load(model_path)
+    model.load_state_dict(state_dict)
     model = model.eval()
-
     return model
 
 
