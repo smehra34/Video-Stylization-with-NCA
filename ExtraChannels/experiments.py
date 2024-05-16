@@ -84,7 +84,7 @@ def setup_args():
 
     # Training settings
     parser.add_argument('--max_iterations', type=int, default=2000, help='Maximum number of iterations')
-    parser.add_argument('--save_every', type=int, default=25, help='Save frequency')
+    parser.add_argument('--save_every', type=int, default=50, help='Save frequency')
     parser.add_argument('--batch_size', type=int, default=2, help='Batch size for training')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('--lr_decay_step', type=int, nargs='+', action='append', default=[[500, 1000]], help='Steps for learning rate decay')
@@ -106,6 +106,9 @@ def main():
         )
 
     DEVICE = torch.device(args.DEVICE)
+
+    model_save_path = f'experiments/experiment_{experiment_index}/models/'
+    ensure_dir(model_save_path)
 
     # Load the style image
     style_images_path = 'data/Style_images/'
@@ -262,35 +265,27 @@ def main():
                     **display_dict,            # Expand the dictionary to log each component separately
                 })
 
-                # Log the generated and reference images
-                img_show = save_train_image(generated_image_vis.detach().cpu().numpy(), None, return_img = True)
-                ref_img_show = save_train_image(aux_imgs_vis.detach().cpu().numpy(), None, return_img = True)
-                wandb.log({"Generated Image": wandb.Image(img_show)})
-                wandb.log({"Reference Image": wandb.Image(ref_img_show)})
+                if i % args.save_every == 0:
 
-                # Additionally, to log images stored in 'summary':
-                if 'vector_field_motion-generated_video_flow' in summary:
-                    # Extract the numpy array containing video flow
-                    video_flow_data = summary['vector_field_motion-generated_video_flow']
+                    # save model checkpoint
+                    torch.save(nca_model, model_save_path + f'model_checkpoint.pth')
 
-                    # Assuming the data shape is (num_images, channels, height, width)
-                    # We'll log the first image in the batch for simplicity
-                    if video_flow_data.ndim == 4 and video_flow_data.shape[1] == 3:  # Check if it is in the format (N, C, H, W)
-                        # Convert from (N, C, H, W) to (N, H, W, C) for the first image
-                        first_image = video_flow_data[0].transpose(1, 2, 0)  # This converts C, H, W to H, W, C
-                        video_flow_img = wandb.Image(first_image)  # Create a wandb Image from numpy array
-                        wandb.log({"Generated Video Flow": video_flow_img})  # Log the image to wandb
+                    # Log the generated and reference images
+                    img_show = save_train_image(generated_image_vis.detach().cpu().numpy(), None, return_img = True)
+                    ref_img_show = save_train_image(aux_imgs_vis.detach().cpu().numpy(), None, return_img = True)
+                    wandb.log({"Generated Image": wandb.Image(img_show)})
+                    wandb.log({"Reference Image": wandb.Image(ref_img_show)})
 
-                # Log generated and target flow vector fields
-                if 'vector_field_motion-generated_flow_vector_field' in summary:
-                    # Directly log the PIL image, assuming it is correctly formatted
-                    generated_flow_vector_field_img = wandb.Image(summary['vector_field_motion-generated_flow_vector_field'])
-                    wandb.log({"Generated Flow Vector Field": generated_flow_vector_field_img})
+                    # Log generated and target flow vector fields
+                    if 'vector_field_motion-generated_flow_vector_field' in summary:
+                        # Directly log the PIL image, assuming it is correctly formatted
+                        generated_flow_vector_field_img = wandb.Image(summary['vector_field_motion-generated_flow_vector_field'])
+                        wandb.log({"Generated Flow Vector Field": generated_flow_vector_field_img})
 
-                if 'vector_field_motion-target_flow_vector_field' in summary:
-                    # Directly log the PIL image, assuming it is correctly formatted
-                    target_flow_vector_field_img = wandb.Image(summary['vector_field_motion-target_flow_vector_field'])
-                    wandb.log({"Target Flow Vector Field": target_flow_vector_field_img})
+                    if 'vector_field_motion-target_flow_vector_field' in summary:
+                        # Directly log the PIL image, assuming it is correctly formatted
+                        target_flow_vector_field_img = wandb.Image(summary['vector_field_motion-target_flow_vector_field'])
+                        wandb.log({"Target Flow Vector Field": target_flow_vector_field_img})
 
                 #else:
             #        batch_loss, batch_loss_log_dict, _ = DynamicTextureLoss(input_dict, return_summary=False)
@@ -300,8 +295,7 @@ def main():
     except (KeyboardInterrupt, torch.cuda.OutOfMemoryError) as e:
         print(e)
         print('Saving latest model checkpoint...')
-    model_save_path = f'experiments/experiment_{experiment_index}/models/'
-    ensure_dir(model_save_path)
+
     torch.save(nca_model, model_save_path + f'model_{i}.pth')
 
     video_save_path = f'experiments/experiment_{experiment_index}/videos/'
