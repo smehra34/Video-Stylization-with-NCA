@@ -55,16 +55,17 @@ def save_setup_images(target_reference_img, target_reference_edges, target_appea
     directory = os.path.join(base_directory, f'experiment_{experiment_index}', 'setup_images')
     ensure_dir(directory)
 
-    # Process and save the target reference image
-    # Normalize from [-1, 1] to [0, 255] for color images
-    img = (target_reference_img[0].detach().cpu().permute(1, 2, 0).numpy() + 1) * 127.5
-    Image.fromarray(img.astype(np.uint8)).save(os.path.join(directory, 'target_reference_image.png'))
+    for i in range(len(target_reference_img)):
+        # Process and save the target reference image
+        # Normalize from [-1, 1] to [0, 255] for color images
+        img = (target_reference_img[i].detach().cpu().permute(1, 2, 0).numpy() + 1) * 127.5
+        Image.fromarray(img.astype(np.uint8)).save(os.path.join(directory, f'target_reference_image_{i}.png'))
 
-    # Process and save the target reference edges
+        # Process and save the target reference edges
 
-    edges = target_reference_edges[0][1].detach().cpu().numpy()
-    edges_normalized = (edges - edges.min()) / (edges.max() - edges.min()) * 255
-    Image.fromarray(edges_normalized.astype(np.uint8), mode='L').save(os.path.join(directory, 'target_reference_edges.png'))
+        edges = target_reference_edges[i][1].detach().cpu().numpy()
+        edges_normalized = (edges - edges.min()) / (edges.max() - edges.min()) * 255
+        Image.fromarray(edges_normalized.astype(np.uint8), mode='L').save(os.path.join(directory, f'target_reference_edge_{i}.png'))
 
     # Process and save the target appearance image
     # Normalize from [-1, 1] to [0, 255] for color images
