@@ -15,7 +15,7 @@ from models.dynca import DyNCA
 os.environ['FFMPEG_BINARY'] = 'ffmpeg'
 
 from utils.misc.display_utils import save_train_image
-from utils.misc.preprocess_texture import preprocess_style_image, preprocess_video, RGBToEdges
+from utils.misc.preprocess_texture import preprocess_style_image, preprocess_target_images, RGBToEdges
 from utils.misc.video_utils import VideoWriter
 import matplotlib.pyplot as plt
 from utils.misc.flow_viz import plot_vec_field
@@ -37,11 +37,7 @@ def setup_args():
     # General settings
     parser.add_argument('--exp_name', type=str, default='no-positional-encoding-with-motion-loss', help='Name of the experiment')
     parser.add_argument('--img_size', type=int, nargs=2, default=[256, 256], help='Image size during training')
-    parser.add_argument('--video_length', type=int, default=10, help='Output video length in seconds')
     parser.add_argument('--style_name', type=str, default='starry-night', help='Name of the style image')
-    parser.add_argument('--style_img_ext', type=str, default='jpg', help='Extension of the style image')
-    parser.add_argument('--target_appearance_2_path', type=str, default='data/Reference/mr-bean.gif', help='Path to the second target appearance reference')
-
 
     # NCA related settings
 
@@ -112,14 +108,19 @@ def main():
     DEVICE = torch.device(args.DEVICE)
 
     # Load the style image
-    style_img= Image.open(f"data/VectorFieldMotion/Appearance/{args.style_name}.{args.style_img_ext}")
+    style_images_path = 'data/Style_images/'
+    ensure_dir(style_images_path)
+    style_img_path = find_image_by_name(style_images_path, args.style_name)
+    style_img = Image.open(style_img_path)
     # Preprocess the style image
     target_appearance_img = preprocess_style_image(style_img, model_type='vgg',
                                                img_size=args.img_size,
                                                batch_size=args.batch_size) * 2.0 - 1.0  # [-1.0, 1.0]
     # Load the target appearance reference
-    target_reference_img = preprocess_video(args.target_appearance_2_path,
-                                               img_size=args.img_size)  # [C, T, H, W]
+    target_images_dir = 'data/Target_images/'
+    ensure_dir(target_images_dir)
+    target_images_paths = scan_folder_for_images(target_images_dir)
+    target_reference_img = preprocess_target_images(target_images_paths, img_size=args.img_size)  # [C, T, H, W]
     target_appearance_img = target_appearance_img.to(DEVICE)
     target_reference_img = target_reference_img.permute(1,0,2,3).to(DEVICE)
 

@@ -32,6 +32,17 @@ def preprocess_style_image(style_img, model_type = 'vgg', img_size = [128, 128],
         input_img_style = input_img_style.repeat(batch_size, 1, 1, 1)
         return input_img_style#, style_img_tensor
     
+def preprocess_target_images(target_imgs_paths,img_size = [128, 128], normalRGB = False):
+    target_imgs_seq = []
+    for target_img_path in target_imgs_paths:
+        target_img = Image.open(target_img_path)
+        target_img_tensor = preprocess_style_image(target_img, 'vgg', img_size)
+        if(normalRGB == False):
+            target_img_tensor = target_img_tensor * 2.0 - 1.0
+        target_imgs_seq.append(target_img_tensor)
+    target_imgs_seq = torch.stack(target_imgs_seq, dim=2)[0]
+    return target_imgs_seq
+
 def preprocess_video(video_path, img_size=[128, 128], normalRGB = False):
     if ('.gif' in video_path):
         gif_video = Image.open(video_path)

@@ -27,6 +27,26 @@ def get_next_experiment_index(base_directory):
         return max(existing_indexes) + 1
     return 1
 
+def find_image_by_name(folder_path, image_name):
+    """
+    Searches for an image file in the folder with the given name (without extension).
+    Returns the full path of the image file if found.
+    Raises an exception if the file is not found.
+    """
+    supported_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
+    for ext in supported_extensions:
+        image_path = os.path.join(folder_path, image_name + ext)
+        if os.path.isfile(image_path):
+            return image_path
+    raise FileNotFoundError(f"Image file '{image_name}' not found in '{folder_path}' with supported extensions {supported_extensions}.")
+
+def scan_folder_for_images(folder_path):
+    """
+    Scans the specified folder and returns a list of image file paths.
+    """
+    supported_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
+    image_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.lower().endswith(supported_extensions)]
+    return image_files
 
 def save_setup_images(target_reference_img, target_reference_edges, target_appearance_img):
     """ Save the provided images into an experiment-specific subfolder named 'setup_images'. """
