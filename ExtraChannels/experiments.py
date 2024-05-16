@@ -15,7 +15,7 @@ from models.dynca import DyNCA
 os.environ['FFMPEG_BINARY'] = 'ffmpeg'
 
 from utils.misc.display_utils import save_train_image
-from utils.misc.preprocess_texture import preprocess_style_image, preprocess_target_images, RGBToEdges
+from utils.misc.preprocess_texture import preprocess_style_image, preprocess_target_images, RGBToGrayscale
 from utils.misc.video_utils import VideoWriter
 import matplotlib.pyplot as plt
 from utils.misc.flow_viz import plot_vec_field
@@ -124,10 +124,9 @@ def main():
     target_appearance_img = target_appearance_img.to(DEVICE)
     target_reference_img = target_reference_img.permute(1,0,2,3).to(DEVICE)
 
-    # convert the target appearance to edges and save the setup images
-    edge_converter = RGBToEdges().to(DEVICE)
-    target_reference_edges = edge_converter(target_reference_img)
-    save_setup_images(target_reference_img, target_reference_edges, target_appearance_img)
+    # convert the target appearance to gs and save the setup images
+    target_reference_gs = RGBToGrayscale(target_reference_img)
+    save_setup_images(target_reference_img, target_reference_gs, target_appearance_img)
 
 
     ###### setup the DyNCA model for training ######
@@ -141,7 +140,7 @@ def main():
 
     nca_min_steps, nca_max_steps = args.nca_step_range
 
-    nca_model = DyNCA(c_in=args.nca_c_in+3, c_out=3, fc_dim=args.nca_fc_dim,
+    nca_model = DyNCA(c_in=args.nca_c_in+1, c_out=3, fc_dim=args.nca_fc_dim,
                     seed_mode=args.nca_seed_mode,
                     pos_emb=args.nca_pos_emb, padding_mode=args.nca_padding_mode,
                     perception_scales=nca_perception_scales,
@@ -171,7 +170,7 @@ def main():
 
     input_dict = {}  # input dictionary for computing the loss functions
     input_dict['target_image_list'] = [target_appearance_img]  # 0,1
-    input_dict['target_image_edges'] = edge_converter(target_appearance_img)[0]
+    input_dict['target_image_gs'] = RGBToGrayscale(target_appearance_img)[0]
 
     interval = args.motion_weight_change_interval
 
@@ -194,9 +193,8 @@ def main():
             aux_imgs_vis = (aux_imgs + 1.0) / 2.0
             input_dict['auxillary_image_list'] = [aux_imgs]  # 0,1
 
-            aux_edges = [target_reference_edges[img].unsqueeze(0) for img in aux_img_ids]
-            aux_edges = torch.concat(aux_edges)
-            aux_edges_vis = (aux_edges + 1.0) / 2.0
+            aux_gs = [target_reference_gs[img].unsqueeze(0) for img in aux_img_ids]
+            aux_gs = torch.concat(aux_gs)
 
             with torch.no_grad():
                 batch_idx = np.random.choice(args.nca_pool_size, args.batch_size, replace=False)
@@ -207,7 +205,7 @@ def main():
                     seed_inject = nca_model.seed(1, size=(nca_size_x, nca_size_y))
                     input_states[:1] = seed_inject[:1]
 
-                input_states = torch.cat((input_states, aux_edges), 1)
+                input_states = torch.cat((input_states, aux_gs), 1)
                 '''Get the image before NCA iteration for computing optic flow'''
                 nca_states_before, nca_features_before = nca_model.forward_nsteps(input_states, step_n=1)
                 z_before_nca = nca_features_before

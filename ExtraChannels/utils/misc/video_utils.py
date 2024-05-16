@@ -4,7 +4,7 @@ import numpy as np
 import moviepy.editor as mvp
 from moviepy.video.io.ffmpeg_writer import FFMPEG_VideoWriter
 from tqdm import tqdm
-from .preprocess_texture import preprocess_style_image, preprocess_video, RGBToEdges
+from .preprocess_texture import preprocess_style_image, preprocess_video, RGBToGrayscale
 from PIL import Image
 
 
@@ -66,16 +66,14 @@ def save_video(video_name, target_vid_path, size_factor=1.0, step_n=8,
     with VideoWriter(filename=f"{video_name}.mp4", fps=30, autoplay=autoplay) as vid, torch.no_grad():
         h = nca_model.seed(1, size=(int(nca_size_x * size_factor), int(nca_size_y * size_factor)))
 
-
-
         for frame in tqdm(range(target_vid.size(0)),  desc="Making the video..."):
             for k in range(int(steps_per_frame)):
 
-                h = torch.cat((h, target_vid[frame].unsqueeze(0)), 1)
+                h = torch.cat((h, RGBToGrayscale(target_vid[frame].unsqueeze(0))), 1)
                 nca_state, nca_feature = nca_model.forward_nsteps(h, step_n)
 
                 z = nca_feature
-                h = nca_state[:, :-3, :, :]
+                h = nca_state[:, :-1, :, :]
 
                 img = z.detach().cpu().numpy()[0]
                 img = img.transpose(1, 2, 0)

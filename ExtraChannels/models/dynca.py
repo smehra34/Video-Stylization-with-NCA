@@ -11,13 +11,13 @@ class DyNCA(torch.nn.Module):
     ----------
     c_in: int, required
         Number of channels in the input
-        Note that each channel will be processed 
+        Note that each channel will be processed
         using 3, or 4 (if laplacian=True) convolution filters
     c_out: int, required
         Number of channels in the output
         Note that the NCA will be performed using c_in channels
-        and the output of the NCA will be expanded to c_out 
-        channels using a learnable 1x1 convolution layer 
+        and the output of the NCA will be expanded to c_out
+        channels using a learnable 1x1 convolution layer
     fc_dim: int, default=94
         Number of channels in the intermediate fully connected layer
     random_seed: int, default=None
@@ -137,17 +137,17 @@ class DyNCA(torch.nn.Module):
             size_x, size_y = size
 
         if self.seed_mode == 'zeros':
-            sd = torch.zeros(n, self.c_in-3, size_y, size_x).to(self.device)
+            sd = torch.zeros(n, self.c_in-1, size_y, size_x).to(self.device)
             return sd
         elif self.seed_mode == 'center_on':
-            sd = torch.zeros(n, self.c_in-3, size_y, size_x).to(self.device)
+            sd = torch.zeros(n, self.c_in-1, size_y, size_x).to(self.device)
             sd[:, :, size_y // 2, size_x // 2] = 1.0
             return sd
         elif self.seed_mode == 'random':
             np.random.seed(self.random_seed)
             torch.manual_seed(self.random_seed)
             torch.cuda.manual_seed_all(self.random_seed)
-            sd = (torch.rand(1, self.c_in-3, size_y, size_x) - 0.5)
+            sd = (torch.rand(1, self.c_in-1, size_y, size_x) - 0.5)
         else:
             sd = None
 

@@ -31,7 +31,7 @@ def preprocess_style_image(style_img, model_type = 'vgg', img_size = [128, 128],
         input_img_style = style_img.permute(0, 3, 1, 2)
         input_img_style = input_img_style.repeat(batch_size, 1, 1, 1)
         return input_img_style#, style_img_tensor
-    
+
 def preprocess_target_images(target_imgs_paths,img_size = [128, 128], normalRGB = False):
     target_imgs_seq = []
     for target_img_path in target_imgs_paths:
@@ -52,7 +52,7 @@ def preprocess_video(video_path, img_size=[128, 128], normalRGB = False):
             cur_frame_tensor = preprocess_style_image(frame, 'vgg', img_size)
             if(normalRGB == False):
                 cur_frame_tensor = cur_frame_tensor * 2.0 - 1.0
-                
+
             train_image_seq.append(cur_frame_tensor)
             index += 1
         train_image_seq = torch.stack(train_image_seq, dim=2)[0] # Output shape is [C, T, H, W]
@@ -76,10 +76,10 @@ def preprocess_video(video_path, img_size=[128, 128], normalRGB = False):
             cur_frame_tensor = preprocess_style_image(frame, 'vgg', img_size)
             if(normalRGB == False):
                 cur_frame_tensor = cur_frame_tensor * 2.0 - 1.0
-                
+
             train_image_seq.append(cur_frame_tensor)
         train_image_seq = torch.stack(train_image_seq, dim=2)[0]
-        
+
         cap.release()
         cv2.destroyAllWindows()
         return train_image_seq
@@ -91,8 +91,8 @@ def select_frame(args, image_seq, vgg_model):
     feature_map = get_middle_feature_vgg(args, image_seq_vgg, vgg_model)[-2:-1]
     # feature_norm = [torch.norm(x.reshape(len(image_seq_vgg), -1), dim = 1).reshape(len(image_seq_vgg), 1, 1, 1) for x in feature_map]
     # feature_map = [x / y for x,y in zip(feature_map, feature_norm)]
-    
-    
+
+
     avg_feature_map = [torch.mean(x, dim = 0) for x in feature_map]
     min_dist_idx_list = []
     dist_array = np.zeros((len(feature_map), len(image_seq_vgg)))
@@ -147,7 +147,7 @@ def get_train_image_seq(args, **kwargs):
         train_image_texture = copy.deepcopy(train_image_seq_texture[frame_idx_texture])
         train_image_texture_save = transforms.ToPILImage()((train_image_texture + 1.0) / 2.0)
     return train_image_seq_texture,train_image_texture,train_image_texture_save,frame_idx_texture
-    
+
 def get_middle_feature_vgg(args, imgs, vgg_model, flatten=False, include_image_as_feat = False):
     size = args.img_size
     DEVICE = args.DEVICE
@@ -175,12 +175,14 @@ def get_middle_feature_vgg(args, imgs, vgg_model, flatten=False, include_image_a
                 features.append(x)
     return features
 
+def RGBToGrayscale(rgb):
+    return torch.mean(rgb, dim=1, keepdim=True)
 
 class RGBToEdges(nn.Module):
 
     def __init__(self):
         super(RGBToEdges, self).__init__()
-        
+
         # sobel filters
         sobel_x_weight = torch.tensor([[[[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]]], dtype=torch.float32)
         sobel_y_weight = torch.tensor([[[[-1, -2, -1], [0, 0, 0], [1, 2, 1]]]], dtype=torch.float32)
@@ -207,4 +209,3 @@ class RGBToEdges(nn.Module):
         output = torch.cat((sobel_x_out, sobel_y_out, laplacian_out), dim=1)
 
         return output
-        

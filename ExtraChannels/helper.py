@@ -48,7 +48,7 @@ def scan_folder_for_images(folder_path):
     image_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.lower().endswith(supported_extensions)]
     return image_files
 
-def save_setup_images(target_reference_img, target_reference_edges, target_appearance_img):
+def save_setup_images(target_reference_img, target_reference_gs, target_appearance_img):
     """ Save the provided images into an experiment-specific subfolder named 'setup_images'. """
     base_directory = 'experiments'
     experiment_index = get_next_experiment_index(base_directory)
@@ -61,11 +61,10 @@ def save_setup_images(target_reference_img, target_reference_edges, target_appea
         img = (target_reference_img[i].detach().cpu().permute(1, 2, 0).numpy() + 1) * 127.5
         Image.fromarray(img.astype(np.uint8)).save(os.path.join(directory, f'target_reference_image_{i}.png'))
 
-        # Process and save the target reference edges
-
-        edges = target_reference_edges[i][1].detach().cpu().numpy()
-        edges_normalized = (edges - edges.min()) / (edges.max() - edges.min()) * 255
-        Image.fromarray(edges_normalized.astype(np.uint8), mode='L').save(os.path.join(directory, f'target_reference_edge_{i}.png'))
+        # Process and save the target reference gs images
+        gs = target_reference_gs[i].detach().cpu().squeeze().numpy()
+        gs_normalized = (gs - gs.min()) / (gs.max() - gs.min()) * 255
+        Image.fromarray(gs_normalized.astype(np.uint8), mode='L').save(os.path.join(directory, f'target_reference_gs_{i}.png'))
 
     # Process and save the target appearance image
     # Normalize from [-1, 1] to [0, 255] for color images
