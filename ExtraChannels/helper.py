@@ -5,7 +5,6 @@ import numpy as np
 
 from utils.misc.display_utils import save_train_image
 from utils.misc.preprocess_texture import preprocess_style_image, preprocess_video, RGBToEdges
-from utils.misc.video_utils import VideoWriter
 import matplotlib.pyplot as plt
 from utils.misc.flow_viz import plot_vec_field
 
@@ -51,32 +50,3 @@ def save_setup_images(target_reference_img, target_reference_edges, target_appea
     # Normalize from [-1, 1] to [0, 255] for color images
     appearance = (target_appearance_img[0].detach().cpu().permute(1, 2, 0).numpy() + 1) * 127.5
     Image.fromarray(appearance.astype(np.uint8)).save(os.path.join(directory, 'target_appearance_image.png'))
-
-def save_video(video_name, target_vid_path, size_factor=1.0, step_n=8, steps_per_frame=1, is_style_image=False, nca_model=None, nca_size_x=256, nca_size_y=256, DEVICE='cuda', autoplay=True):
-    target_vid = preprocess_video(target_vid_path,
-                                    img_size=(int(nca_size_x * size_factor), int(nca_size_y * size_factor)))  # [C, T, H, W]
-
-
-    target_vid = target_vid.permute(1,0,2,3).to(DEVICE)
-
-    with VideoWriter(filename=f"{video_name}.mp4", fps=30, autoplay=autoplay) as vid, torch.no_grad():
-        h = nca_model.seed(1, size=(int(nca_size_x * size_factor), int(nca_size_y * size_factor)))
-
-
-
-        for frame in tqdm(range(target_vid.size(0)),  desc="Making the video..."):
-            for k in range(int(steps_per_frame)):
-                f = 1 if not is_style_image else 90
-                for i in range(f):
-
-                    h = torch.cat((h, target_vid[frame].unsqueeze(0)), 1)
-                    nca_state, nca_feature = nca_model.forward_nsteps(h, step_n)
-
-                    z = nca_feature
-                    h = nca_state[:, :-3, :, :]
-
-                    img = z.detach().cpu().numpy()[0]
-                    img = img.transpose(1, 2, 0)
-                    img = np.clip(img, -1.0, 1.0)
-                    img = (img + 1.0) / 2.0
-                    vid.add(img)

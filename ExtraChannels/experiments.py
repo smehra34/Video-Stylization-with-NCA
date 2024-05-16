@@ -25,6 +25,7 @@ from IPython.display import clear_output, Markdown
 
 import argparse
 from helper import *
+from utils.misc.video_utils import save_video
 
 warnings.filterwarnings('ignore')
 warnings.simplefilter('ignore')
@@ -109,7 +110,7 @@ def main():
         )
 
     DEVICE = torch.device(args.DEVICE)
-    
+
     # Load the style image
     style_img= Image.open(f"data/VectorFieldMotion/Appearance/{args.style_name}.{args.style_img_ext}")
     # Preprocess the style image
