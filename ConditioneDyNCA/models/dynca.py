@@ -29,7 +29,7 @@ class DyNCA(torch.nn.Module):
 
     def __init__(self, c_in, c_out, fc_dim=96,
                  padding_mode='replicate',
-                 seed_mode='zeros', pos_emb='CPE',
+                 seed_mode='zeros', conditioning='edges',
                  perception_scales=[0],
                  device=torch.device("cuda:0")):
 
@@ -42,16 +42,19 @@ class DyNCA(torch.nn.Module):
         assert seed_mode in DyNCA.SEED_MODES
         self.seed_mode = seed_mode
         self.random_seed = 42
-        self.pos_emb = pos_emb
+        self.conditioning = conditioning
         self.device = device
         self.expand = 4
 
         self.c_cond = 0
-        if self.pos_emb == 'CPE':
-            self.pos_emb_2d = CPE2D()
+        if self.conditioning == 'pos_emb':
+            self.cond_layer = CPE2D()
             self.c_cond += 2
+        elif self.conditioning == 'edges':
+            self.cond_layer = EdgeExtractor()
+            self.c_cond += 3
         else:
-            self.pos_emb_2d = None
+            self.cond_layer = None
 
         self.w1 = torch.nn.Conv2d(self.c_in * self.expand + self.c_cond, self.fc_dim, 1, device=self.device)
         torch.nn.init.xavier_normal_(self.w1.weight, gain=0.2)
@@ -95,7 +98,7 @@ class DyNCA(torch.nn.Module):
 
         return y
 
-    def perceive_multiscale(self, x, pos_emb_mat=None):
+    def perceive_multiscale(self, x, cond_mat=None):
         perceptions = []
         y = 0
         for scale in self.perception_scales:
@@ -105,14 +108,19 @@ class DyNCA(torch.nn.Module):
         y = sum(perceptions)
         y = y / len(self.perception_scales)
 
-        if pos_emb_mat is not None:
-            y = torch.cat([y, pos_emb_mat], dim=1)
+        if cond_mat is not None:
+            y = torch.cat([y, cond_mat], dim=1)
 
         return y
 
-    def forward(self, x, update_rate=0.5, return_perception=False):
-        if self.pos_emb_2d:
-            y_percept = self.perceive_multiscale(x, pos_emb_mat=self.pos_emb_2d(x))
+    def forward(self, x, update_rate=0.5, return_perception=False, cond_img=None):
+        if self.cond_layer:
+            if self.conditioning == 'pos_emb':
+                cond_mat = self.cond_layer(x)
+            # otherwise condition based on cond_img
+            else:
+                cond_mat = self.cond_layer(cond_img)
+            y_percept = self.perceive_multiscale(x, cond_mat=cond_mat)
         else:
             y_percept = self.perceive_multiscale(x)
         y = self.w2(F.relu(self.w1(y_percept)))
@@ -137,17 +145,17 @@ class DyNCA(torch.nn.Module):
             size_x, size_y = size
 
         if self.seed_mode == 'zeros':
-            sd = torch.zeros(n, self.c_in-3, size_y, size_x).to(self.device)
+            sd = torch.zeros(n, self.c_in, size_y, size_x).to(self.device)
             return sd
         elif self.seed_mode == 'center_on':
-            sd = torch.zeros(n, self.c_in-3, size_y, size_x).to(self.device)
+            sd = torch.zeros(n, self.c_in, size_y, size_x).to(self.device)
             sd[:, :, size_y // 2, size_x // 2] = 1.0
             return sd
         elif self.seed_mode == 'random':
             np.random.seed(self.random_seed)
             torch.manual_seed(self.random_seed)
             torch.cuda.manual_seed_all(self.random_seed)
-            sd = (torch.rand(1, self.c_in-3, size_y, size_x) - 0.5)
+            sd = (torch.rand(1, self.c_in, size_y, size_x) - 0.5)
         else:
             sd = None
 
@@ -155,16 +163,48 @@ class DyNCA(torch.nn.Module):
 
         return sd
 
-    def forward_nsteps(self, input_state, step_n, update_rate=0.5, return_middle_feature=False):
+    def forward_nsteps(self, input_state, step_n, update_rate=0.5, return_middle_feature=False,
+                       cond_img=None):
         nca_state = input_state
         middle_feature_list = []
         for _ in range(step_n):
-            nca_state, nca_feature = self(nca_state, update_rate=update_rate)
+            nca_state, nca_feature = self(nca_state, update_rate=update_rate, cond_img=cond_img)
             if return_middle_feature:
                 middle_feature_list.append(nca_feature)
         if return_middle_feature:
             return nca_state, nca_feature, middle_feature_list
         return nca_state, nca_feature
+
+
+
+class EdgeExtractor(nn.Module):
+
+    def __init__(self):
+        super(EdgeExtractor, self).__init__()
+
+        # sobel filters
+        sobel_x_weight = torch.tensor([[[[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]]], dtype=torch.float32)
+        sobel_y_weight = torch.tensor([[[[-1, -2, -1], [0, 0, 0], [1, 2, 1]]]], dtype=torch.float32)
+        self.sobel_x = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        self.sobel_y = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        self.sobel_x.weight = nn.Parameter(sobel_x_weight, requires_grad=False)
+        self.sobel_y.weight = nn.Parameter(sobel_y_weight, requires_grad=False)
+
+        # laplacian filter
+        laplacian_weight = torch.tensor([[[[1, 2, 1], [2, -12, 2], [1, 2, 1]]]], dtype=torch.float32)
+        self.laplacian = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        self.laplacian.weight = nn.Parameter(laplacian_weight, requires_grad=False)
+
+    def forward(self, x):
+
+        sobel_x_out = self.sobel_x(x)
+        sobel_y_out = self.sobel_y(x)
+        laplacian_out = self.laplacian(x)
+
+        # stack the transformations
+        output = torch.cat((sobel_x_out, sobel_y_out, laplacian_out), dim=1)
+
+        return output
 
 
 class CPE2D(nn.Module):
@@ -196,8 +236,8 @@ class CPE2D(nn.Module):
         ys = 2.0 * (ys - 0.5 + 0.5 / w)
         xs = xs[None, :, None]
         ys = ys[None, None, :]
-        # emb = torch.zeros((2, h, w), device=tensor.device).type(tensor.type())
-        emb = torch.zeros((2, h, w), device=tensor.device)
+        emb = torch.zeros((2, h, w), device=tensor.device).type(tensor.type())
+        # emb = torch.zeros((2, h, w), device=tensor.device)
         emb[:1] = xs
         emb[1: 2] = ys
 
