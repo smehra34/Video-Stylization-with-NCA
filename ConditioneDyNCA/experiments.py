@@ -48,7 +48,7 @@ def setup_args():
     parser.add_argument('--nca_fc_dim', type=int, default=96, help='Dimensionality of update MLP in DyNCA')
     parser.add_argument('--nca_seed_mode', type=str, default='zeros', help='Seed initialization mode')
     parser.add_argument('--nca_padding_mode', type=str, default='circular', help='Padding mode in perception')
-    parser.add_argument('--nca_pos_emb', type=str, default=None, help='Positional encoding type')
+    parser.add_argument('--nca_conditioning', type=str, default='edges', help='Conditioning type. Either pos_emb, edges or None. Default edges.')
     parser.add_argument('--nca_perception_scales', type=int, nargs='+', default=[0], help='Perception scales for NCA')
     parser.add_argument('--nca_base_num_steps', type=int, default=24, help='Base number of steps for NCA')
 
@@ -143,9 +143,9 @@ def main():
 
     nca_min_steps, nca_max_steps = args.nca_step_range
 
-    nca_model = DyNCA(c_in=args.nca_c_in+1, c_out=3, fc_dim=args.nca_fc_dim,
+    nca_model = DyNCA(c_in=args.nca_c_in, c_out=3, fc_dim=args.nca_fc_dim,
                     seed_mode=args.nca_seed_mode,
-                    pos_emb=args.nca_pos_emb, padding_mode=args.nca_padding_mode,
+                    conditioning=args.nca_conditioning, padding_mode=args.nca_padding_mode,
                     perception_scales=nca_perception_scales,
                     device=DEVICE)
     with torch.no_grad():
@@ -208,15 +208,15 @@ def main():
                     seed_inject = nca_model.seed(1, size=(nca_size_x, nca_size_y))
                     input_states[:1] = seed_inject[:1]
 
-                input_states = torch.cat((input_states, aux_gs), 1)
+                #input_states = torch.cat((input_states, aux_gs), 1)
                 '''Get the image before NCA iteration for computing optic flow'''
-                nca_states_before, nca_features_before = nca_model.forward_nsteps(input_states, step_n=1)
+                nca_states_before, nca_features_before = nca_model.forward_nsteps(input_states, step_n=1, cond_img=aux_gs)
                 z_before_nca = nca_features_before
                 image_before_nca = z_before_nca
 
             step_n = np.random.randint(nca_min_steps, nca_max_steps)
             input_dict['step_n'] = step_n
-            nca_states_after, nca_features_after = nca_model.forward_nsteps(input_states, step_n)
+            nca_states_after, nca_features_after = nca_model.forward_nsteps(input_states, step_n, cond_img=aux_gs)
 
             z = nca_features_after
             generated_image = z
@@ -250,6 +250,9 @@ def main():
                     exit()
 
                 for p_name, p in nca_model.named_parameters():
+                    # skip any non trainable parameters
+                    if not p.requires_grad:
+                        continue
                     p.grad /= (p.grad.norm() + 1e-8)  # normalize gradients
 
                 optimizer.step()

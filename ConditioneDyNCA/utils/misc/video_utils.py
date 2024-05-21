@@ -69,11 +69,11 @@ def save_video(video_name, target_vid_path, size_factor=1.0, step_n=8,
         for frame in tqdm(range(target_vid.size(0)),  desc="Making the video..."):
             for k in range(int(steps_per_frame)):
 
-                h = torch.cat((h, RGBToGrayscale(target_vid[frame].unsqueeze(0))), 1)
-                nca_state, nca_feature = nca_model.forward_nsteps(h, step_n)
+                nca_state, nca_feature = nca_model.forward_nsteps(h, step_n,
+                        cond_img=RGBToGrayscale(target_vid[frame].unsqueeze(0)))
 
                 z = nca_feature
-                h = nca_state[:, :-1, :, :]
+                h = nca_state
 
                 img = z.detach().cpu().numpy()[0]
                 img = img.transpose(1, 2, 0)

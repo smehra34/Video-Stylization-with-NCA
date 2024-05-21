@@ -51,7 +51,7 @@ class DyNCA(torch.nn.Module):
             self.cond_layer = CPE2D()
             self.c_cond += 2
         elif self.conditioning == 'edges':
-            self.cond_layer = EdgeExtractor()
+            self.cond_layer = EdgeExtractor().to(device)
             self.c_cond += 3
         else:
             self.cond_layer = None
@@ -119,7 +119,8 @@ class DyNCA(torch.nn.Module):
                 cond_mat = self.cond_layer(x)
             # otherwise condition based on cond_img
             else:
-                cond_mat = self.cond_layer(cond_img)
+                with torch.no_grad():
+                    cond_mat = self.cond_layer(cond_img)
             y_percept = self.perceive_multiscale(x, cond_mat=cond_mat)
         else:
             y_percept = self.perceive_multiscale(x)
