@@ -49,6 +49,7 @@ def setup_args():
     parser.add_argument('--nca_seed_mode', type=str, default='zeros', help='Seed initialization mode')
     parser.add_argument('--nca_padding_mode', type=str, default='circular', help='Padding mode in perception')
     parser.add_argument('--nca_conditioning', type=str, default='edges', help='Conditioning type. Either pos_emb, edges or None. Default edges.')
+    parser.add_argument('--edge_transform', type=str, default='None', help='Transformation to apply to the edges. Either tanh or None. Default None.')
     parser.add_argument('--nca_perception_scales', type=int, nargs='+', default=[0], help='Perception scales for NCA')
     parser.add_argument('--nca_base_num_steps', type=int, default=24, help='Base number of steps for NCA')
 
@@ -146,9 +147,14 @@ def main():
 
     nca_model = DyNCA(c_in=args.nca_c_in, c_out=3, fc_dim=args.nca_fc_dim,
                     seed_mode=args.nca_seed_mode,
-                    conditioning=args.nca_conditioning, padding_mode=args.nca_padding_mode,
+                    conditioning=args.nca_conditioning,
+                    edge_transform=args.edge_transform,
+                    padding_mode=args.nca_padding_mode,
                     perception_scales=nca_perception_scales,
                     device=DEVICE)
+
+    print(nca_model)
+
     with torch.no_grad():
         nca_pool = nca_model.seed(args.nca_pool_size, size=(nca_size_x, nca_size_y))
 

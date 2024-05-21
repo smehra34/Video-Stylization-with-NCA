@@ -30,6 +30,7 @@ class DyNCA(torch.nn.Module):
     def __init__(self, c_in, c_out, fc_dim=96,
                  padding_mode='replicate',
                  seed_mode='zeros', conditioning='edges',
+                 edge_transform='tanh',
                  perception_scales=[0],
                  device=torch.device("cuda:0")):
 
@@ -51,7 +52,7 @@ class DyNCA(torch.nn.Module):
             self.cond_layer = CPE2D()
             self.c_cond += 2
         elif self.conditioning == 'edges':
-            self.cond_layer = EdgeExtractor().to(device)
+            self.cond_layer = EdgeExtractor(edge_transform).to(device)
             self.c_cond += 3
         else:
             self.cond_layer = None
@@ -180,7 +181,7 @@ class DyNCA(torch.nn.Module):
 
 class EdgeExtractor(nn.Module):
 
-    def __init__(self):
+    def __init__(self, transform):
         super(EdgeExtractor, self).__init__()
 
         # sobel filters
@@ -196,6 +197,10 @@ class EdgeExtractor(nn.Module):
         self.laplacian = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
         self.laplacian.weight = nn.Parameter(laplacian_weight, requires_grad=False)
 
+        self.edge_transform = nn.Identity()
+        if transform == 'tanh':
+            self.edge_transform = nn.Tanh()
+
     def forward(self, x):
 
         sobel_x_out = self.sobel_x(x)
@@ -205,7 +210,7 @@ class EdgeExtractor(nn.Module):
         # stack the transformations
         output = torch.cat((sobel_x_out, sobel_y_out, laplacian_out), dim=1)
 
-        return output
+        return self.edge_transform(output)
 
 
 class CPE2D(nn.Module):
