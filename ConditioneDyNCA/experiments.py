@@ -107,7 +107,8 @@ def main():
 
     DEVICE = torch.device(args.DEVICE)
 
-    model_save_path = f'experiments/experiment_{experiment_index}/models/'
+    exp_dir = f'experiments/experiment_{experiment_index}'
+    model_save_path = f'{exp_dir}/models/'
     ensure_dir(model_save_path)
 
     # Load the style image
@@ -129,7 +130,7 @@ def main():
 
     # convert the target appearance to gs and save the setup images
     target_reference_gs = RGBToGrayscale(target_reference_img)
-    save_setup_images(target_reference_img, target_reference_gs, target_appearance_img)
+    save_setup_images(target_reference_img, target_reference_gs, target_appearance_img, exp_dir)
 
 
     ###### setup the DyNCA model for training ######
@@ -302,7 +303,7 @@ def main():
 
     torch.save(nca_model, model_save_path + f'model_{i}.pth')
 
-    video_save_path = f'experiments/experiment_{experiment_index}/videos/'
+    video_save_path = f'{exp_dir}/videos/'
     ensure_dir(video_save_path)
     ## Generate Videos
     generate_control_videos(style_img_path, video_save_path, size_factor=2.0,
