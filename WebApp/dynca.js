@@ -437,8 +437,9 @@ const PROGRAMS = {
     greyscale: `
     void main() {
         vec2 xy = getOutputXY();
-
-        vec4 v = texture2D(u_input_tex, xy/u_output.size);
+        vec2 uv = xy/u_output.size;
+        uv.x = 1.0 - uv.x;
+        vec4 v = texture2D(u_input_tex, uv);
         float grey = dot(v.rgb, vec3(0.33, 0.33, 0.33))* 2.0 - 1.0;
 
         // if (xy.x > 60.)
