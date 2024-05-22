@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-60TLTRN7TQ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+
+        gtag('config', 'G-60TLTRN7TQ');
+    </script>
+
+
+    <meta charset="utf-8">
+    <meta name="description" content="DyNCA: Dynamic Texture Synthesis Using Neural Cellular Automata">
+    <meta name="keywords"
+        content="DyhNCA, NCA, Textures, DynamiTextures, Synthesis, Dynamic Texture Synthesis, Neural Cellular Automata, Turing Patterns">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DyNCA: Real-Time Dynamic Texture Synthesis Using Neural Cellular Automata</title>
+
+
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+    <link rel="stylesheet" href="./static/css/bulma.min.css">
+    <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    <link rel="stylesheet" href="./static/css/index.css">
+    <link rel="icon" href="./static/images/favicon.png">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script defer src="./static/js/fontawesome.all.min.js"></script>
+
+    <!--    <script src="./static/js/bulma-carousel.min.js"></script>-->
+    <!--    <script src="./static/js/bulma-slider.min.js"></script>-->
+    <!--    <script src="./static/js/index.js"></script>-->
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://distill.pub/template.v2.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="twgl.min.js"></script>
+    <script type="module" src="./dynca.js"></script>
+    <script type="module" src="./demo.js"></script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+        </script>
+    <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+
+    </script>
+
+</head>
+
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="playIcon" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"></path>
+        <path d="M0 0h24v24H0z" fill="none"></path>
+    </symbol>
+    <symbol id="pauseIcon" viewBox="0 0 24 24">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
+        <path d="M0 0h24v24H0z" fill="none"></path>
+    </symbol>
+    <symbol id="resetIcon" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z">
+        </path>
+    </symbol>
+    <symbol id="zoomInIcon" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0V0z" fill="none" />
+        <path
+            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+        <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
+    </symbol>
+    <symbol id="zoomOutIcon" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0V0z" fill="none" />
+        <path
+            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z" />
+    </symbol>
+    <symbol id="mouse" viewBox="0 0 100 100">
+        <path
+            d="M32,41v18c0,9.9,8.1,18,18,18c9.9,0,18-8.1,18-18V41c0-9.9-8.1-18-18-18C40.1,23,32,31.1,32,41z M50,27c7.7,0,14,6.3,14,14  v18c0,7.7-6.3,14-14,14s-14-6.3-14-14V41C36,33.3,42.3,27,50,27z">
+        </path>
+        <path d="M50,44c1.1,0,2-0.9,2-2v-6c0-1.1-0.9-2-2-2s-2,0.9-2,2v6C48,43.1,48.9,44,50,44z"></path>
+        <path
+            d="M48.6,92.4C49,92.8,49.5,93,50,93s1-0.2,1.4-0.6l5-5c0.8-0.8,0.8-2,0-2.8s-2-0.8-2.8,0L50,88.2l-3.6-3.6  c-0.8-0.8-2-0.8-2.8,0c-0.8,0.8-0.8,2,0,2.8L48.6,92.4z">
+        </path>
+        <path
+            d="M48.6,7.6l-5,5c-0.8,0.8-0.8,2,0,2.8C44,15.8,44.5,16,45,16s1-0.2,1.4-0.6l3.6-3.6l3.6,3.6C54,15.8,54.5,16,55,16  s1-0.2,1.4-0.6c0.8-0.8,0.8-2,0-2.8l-5-5C50.6,6.8,49.4,6.8,48.6,7.6z">
+        </path>
+    </symbol>
+</svg>
+
+
+<body>
+
+
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container is-max-desktop">
+                <div class="columns is-centered">
+                    <div class="column has-text-centered">
+                        <h1 class="title is-1 publication-title">DyNCA: Real-Time Dynamic Texture Synthesis Using Neural
+                            Cellular Automata</h1>
+                        <div class="is-size-5 publication-authors">
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?hl=en&user=bddQ6pQAAAAJ">Ehsan
+                                    Pajouheshgar</a><sup>*</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=jvCvNPQAAAAJ&hl=en/">Yitao
+                                    Xu</a><sup>*</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=kCy8JG8AAAAJ&hl=en">Tong
+                                    Zhang</a>,</span>
+                            <span class="author-block">
+                                <a href="https://www.epfl.ch/labs/ivrl/">Sabine Süsstrunk</a></span>
+
+
+                        </div>
+                        <div class="is-size-6 publication-authors">
+                            <span class="author-block">Image and Visual Representation Lab (IVRL)</span>
+                        </div>
+                        <!--                    <div class="is-size-5 publication-authors">-->
+                        <!--                        <span class="author-block">School of Computer and Communication Sciences (IC)</span>-->
+                        <!--                    </div>-->
+                        <div class="is-size-6 publication-authors">
+                            <span class="author-block">École Polytechnique Fédérale de Lausanne (EPFL)</span>
+                        </div>
+
+                        <div class="is-size-4 publication-authors">
+                            <span class="author-block">CVPR 2023 Conference</span>
+                        </div>
+
+                        <div class="column has-text-centered">
+                            <div class="publication-links">
+                                <!-- PDF Link. -->
+                                <!--                            <span class="link-block">-->
+                                <!--                <a href=""-->
+                                <!--                   class="external-link button is-normal is-rounded is-dark">-->
+                                <!--                  <span class="icon">-->
+                                <!--                      <i class="fas fa-file-pdf"></i>-->
+                                <!--                  </span>-->
+                                <!--                  <span>Paper</span>-->
+                                <!--                </a>-->
+                                <!--              </span>-->
+
+                                <!-- Arxiv. -->
+                                <span class="link-block">
+                                    <a href="https://arxiv.org/abs/2211.11417"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="ai ai-arxiv"></i>
+                                        </span>
+                                        <span>arXiv</span>
+                                    </a>
+                                </span>
+
+                                <!-- Supplementary. -->
+                                <span class="link-block">
+                                    <a href="supplementary/" class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fas fa-folder"></i>
+                                        </span>
+                                        <span>Supplementary</span>
+                                    </a>
+                                </span>
+
+                                <!-- Video Link. -->
+                                <span class="link-block">
+                                    <a href="https://www.youtube.com/watch?v=ELZC2mX5Z9U"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fab fa-youtube"></i>
+                                        </span>
+                                        <span>Video</span>
+                                    </a>
+                                </span>
+                                <!-- Code Link. -->
+                                <span class="link-block">
+                                    <a href="https://github.com/IVRL/DyNCA"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon"><i class="fab fa-github"></i></span>
+                                        <span>GitHub</span>
+                                    </a>
+                                </span>
+
+                                <span class="link-block">
+                                    <a href="https://colab.research.google.com/github/IVRL/DyNCA/blob/main/notebooks/vector_field_motion_colab.ipynb"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon"><i class="fab fa-google"></i></span>
+                                        <span>Google Colab</span>
+                                    </a>
+                                </span>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="hero teaser">
+        <div class="container is-max-desktop">
+
+
+            <div class="hero-body">
+                <div class="l-body-outset grid" id="demo">
+                    <div>
+                        <canvas id="demo-canvas"></canvas>
+                        <video id="webcamVideo" autoplay></video>
+                        <img id="capturedFrame">
+                        <canvas id="image-canvas"></canvas>
+
+                        <div class="demo-controls">
+                            <div class="play-reset tooltip" style="text-align: left;">
+                                <span id="play-pause">
+
+                                    <svg class="icon" id="play">
+                                        <use xlink:href="#playIcon"></use>
+                                    </svg>
+                                    <svg class="icon" id="pause" style="display: none;">
+                                        <use xlink:href="#pauseIcon"></use>
+                                    </svg>
+                                </span>
+                                <svg class="icon" id="reset">
+                                    <use xlink:href="#resetIcon"></use>
+                                </svg>
+
+                                <label><img id="benchmark" src="images/benchmark.png" width="50px"
+                                        height="50px" /></label>
+
+                            </div>
+                            <div class="speed">
+                                <input type="range" id="speed" min="-4" max="4" step="1" value="0"></br>Steps / frame:
+                                <label id="speedLabel"></label>
+
+                            </div>
+
+                            <div style="text-align: right;">
+                                <svg class="icon" id="zoomIn">
+                                    <use xlink:href="#zoomInIcon"></use>
+                                </svg>
+                                <svg class="icon disabled" id="zoomOut">
+                                    <use xlink:href="#zoomOutIcon"></use>
+                                </svg>
+                            </div>
+                            <div id='brushSelect' class="button-group">
+                                <label>
+                                    <input type="radio" name="brush"><img src="images/brush_S.png" width="38px"
+                                        height="38px" />
+                                </label>
+                                <label>
+                                    <input type="radio" name="brush"><img src="images/brush_M.png" width="38px"
+                                        height="38px" />
+                                </label>
+                                <label>
+                                    <input type="radio" name="brush" checked="checked"><img src="images/brush_L.png"
+                                        width="38px" height="38px" />
+                                </label>
+                                <br> Brush Size
+                            </div>
+
+                            <div>
+                                <input type="range" id="rotation" min="0" max="360" step="1" value="0"></br>Rotation:
+                                <label id="rotationLabel"></label><br>
+
+                                <!--                            <input type="range" id="rate" min="0.01" max="1.0" step="0.01" value="1.0"></br>Speed: <label id="rateLabel"></label><br>-->
+
+
+
+                            </div>
+                            <div id='configSelect' class="button-group">
+                                <label>
+                                    <input type="radio" name="config"><img src="images/config_S.png" width="38px"
+                                        height="38px" />
+                                </label>
+                                <label>
+                                    <input type="radio" name="config" checked="checked"><img src="images/config_L.png"
+                                        width="38px" height="38px" />
+                                </label>
+                                <br>DyNCA Config
+                            </div>
+                            <div id='alignSelect' class="button-group">
+                                <label>
+                                    <input type="radio" checked="checked" name="align"><img
+                                        src="images/icons.svg#alignRegular" />
+                                </label>
+                                <label>
+                                    <input type="radio" name="align"><img src="images/icons.svg#alignPolar" />
+                                </label>
+                                <label>
+                                    <input type="radio" name="align"><img src="images/icons.svg#alignDipole" />
+                                </label>
+                                <br>Local Coordinate <br>Transformation
+                            </div>
+
+                            <div>
+
+                                <input type="range" id="resolution" min="-2" max="2" step="1" value="0"></br>Resolution:
+                                <label id="resolutionLabel"></label>
+                            </div>
+                            <!--            <div id='RotPosEmb' class="button-group">-->
+                            <!--                <label>-->
+                            <!--                    <input type="radio" checked="checked" name="rpe"><img src="images/icons.svg#gridSquare"/>-->
+                            <!--                </label>-->
+                            <!--                <label>-->
+                            <!--                    <input type="radio" name="grid" id='nrpe'><img src="images/icons.svg#gridHex"/>-->
+                            <!--                </label>-->
+                            <!--                <br>Rotate Positional <br>Embedding-->
+                            <!--            </div>-->
+                        </div>
+                        <br>
+                        <div id="demo-tip">
+
+                            <img id="pointer" src="images/pointer.svg">
+                            <div class="hint ">
+                                Click or tap the image to erase parts of the pattern.
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div id="pattern-controls">
+                        <div class="pattern-selector-title" id="pattern_selector_title">
+                            <span>Target Appearance</span>
+                        </div>
+                        <!--                    <div class="texture-overlay overlaygrad">-->
+                        <!--                    </div>-->
+                        <!--                    <div class="texture-overlay overlayicon">-->
+                        <!--                    </div>-->
+                        <div id="texture" class="pattern-selector">
+                            <!-- a hacky way to add some padding, so the fadeout doesn't cover items in the scroll. -->
+                            <div class="whitespace"></div>
+                        </div>
+                        <div id="texhint">
+
+                            <div id="origtex">
+                            </div>
+                            <span id="texhinttext"></span>
+                            <div id="origmot"></div>
+                            <span id="mothinttext"></span>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- <section class="section hero is-light">
+        <div class="container is-max-desktop">
+            -- Abstract. --
+            <div class="columns is-centered has-text-centered">
+                <div class="column is-four-fifths">
+                    <h2 class="title is-3">Abstract</h2>
+                    <div class="content has-text-justified">
+                        <p>
+                            Current Dynamic Texture Synthesis (DyTS) models can synthesize realistic videos. However,
+                            they
+                            require a slow iterative optimization process to synthesize a single fixed-size short video,
+                            and
+                            they do not offer any post-training control over the synthesis process. We propose Dynamic
+                            Neural Cellular Automata (DyNCA), a framework for real-time and controllable dynamic texture
+                            synthesis. Our method is built upon the recently introduced NCA models and can synthesize
+                            infinitely long and arbitrary-sized realistic video textures in real time. We quantitatively
+                            and
+                            qualitatively evaluate our model and show that our synthesized videos appear more realistic
+                            than
+                            the existing results. We improve the SOTA DyTS performance by 2∼4 orders of magnitude.
+                            Moreover,
+                            our model offers several real-time video controls including motion speed, motion direction,
+                            and
+                            an editing brush tool. We exhibit our trained models in an online interactive demo that runs
+                            on
+                            local hardware and is accessible on personal computers and smartphones.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+            --/ Abstract. --
+
+            -- Paper video. --
+    --        <div class="columns is-centered has-text-centered">--
+    --            <div class="column is-four-fifths">--
+    --                <h2 class="title is-3">Video</h2>--
+    --                <div class="publication-video">--
+    --                    <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"--
+    --                            frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>--
+    --                </div>--
+    --            </div>--
+    --        </div>--
+    --/ Paper video. --
+    </div>
+    </section> -->
+    <!-- 
+    <section class="section is-light">
+        <div class="container is-max-desktop">
+            -- Abstract. --
+            <div class="columns is-centered has-text-centered">
+                <div class="column is-four-fifths">
+                    <h2 class="title is-3">How it works?</h2>
+                    <div class="content has-text-justified">
+
+                        <img src="images/dynca_video_cut.png" height="100%" />
+                        <br><br>
+                        <p>
+                            Starting from a seed state, DyNCA iteratively updates it, generating an image sequence. We
+                            extract images from this sequence and compare them with an appearance target as well as a
+                            motion
+                            target to obtain the DyNCA training objectives. After training, DyNCA can adapt to seeds of
+                            different height and width, and synthesize videos with arbitrary length. Sequentially
+                            applying
+                            DyNCA updates on the seed synthesizes dynamic texture videos in real-time.
+                        </p>
+
+                        <br>
+                        <p> The figure below illustrates a single <i>DyNCA</i> step.</p>
+
+                        <img src="images/NCA_Step_cut.png" height="100%" />
+                        <br><br>
+                        <p>
+                            Given an input state $\mathbf{S}^t \in R^{H \times W \times C}$ at time step $t$,
+                            each cell perceives its neighbors on various scales with the same perception layer.
+                            The perception tensor of each scale is then upsampled and summed up, and is concatenated
+                            with
+                            the positional encoding tensor $\mathbf{P}_{xy}$.
+                            Each cell $s^t_{ij}$ then applies the same update rule, parametrized by a small neural
+                            network.
+                            Finally, all cells perform stochastic residual update to determine the state of the cells in
+                            time $t + \Delta t$.
+
+                        </p>
+
+
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </section> -->
+    <!-- 
+    <section class="section hero is-light" id="style_transfer">
+        <div class="container is-max-desktop">
+            <h2 class="title is-3 has-text-centered">Dynamic Style Transfer</h2>
+
+
+            <div class="columns is-centered">
+
+
+                -- Visual Effects. --
+    <div class="column">
+        <div class="content">
+            <h3 class="title is-5 has-text-centered">Target Appearance</h3>
+            <p>
+                Our <i>DyNCA</i> model learns a desired texture pattern from a given target
+                appearance image. <br><br><br><br>
+            </p>
+            <img src="images/style_transfer_appearance/cartoon_fire_6.png" height="100%" />
+            <img src="images/style_transfer_appearance/cartoon_water_1.png" height="100%" />
+            <img src="images/style_transfer_appearance/USA1.png" height="100%" />
+            <img src="images/style_transfer_appearance/cartoon_fire_4.png" height="100%" />
+            <img src="images/style_transfer_appearance/cartoon_water_3.png" height="100%" />
+            <img src="images/style_transfer_appearance/LGBT.jpg" height="100%" />
+            <img src="images/style_transfer_appearance/cartoon_fire_2.png" height="100%" />
+            <img src="images/style_transfer_appearance/cartoon_water_2.png" height="100%" />
+            <img src="images/style_transfer_appearance/cartoon_fire_1.png" height="100%" />
+            <img src="images/style_transfer_appearance/cartoon_water_4.png" height="100%" />
+            <img src="images/style_transfer_appearance/cartoon_fire_3.png" height="100%" />
+
+        </div>
+    </div>
+    --/ Visual Effects. --
+
+    -- Matting. --
+    <div class="column">
+        <h3 class="title is-5 has-text-centered">Target Dynamics</h3>
+        <div class="columns is-centered">
+            <div class="column content">
+                <p>
+                    Our model can learn motion from a target video and transfer this motion to the target
+                    appearance image. <br><br><br><br>
+                </p>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/flames.mp4" type="video/mp4">
+                </video>
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/sea_2.mp4" type="video/mp4">
+                </video>
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/flag_2.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/fireplace_2.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/sea_2.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/flag_2.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/fireplace_1.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/sea_2.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/flames.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/water_3.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/real_mp4/fireplace_2.mp4" type="video/mp4">
+                </video>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="column">
+        <h3 class="title is-5 has-text-centered">Synthesized Results</h3>
+        <div class="columns is-centered">
+            <div class="column content">
+                <p>
+                    Our model synthesizes realistic dynamic texture videos. Each synthesized video frame
+                    resembles the target appearance, while the the concatenation of frames induces the
+                    motion of
+                    the target dynamics.
+                </p>
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/flames-cartoon_fire_6.mp4" type="video/mp4">
+                </video>
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/sea_2-cartoon_water_1.mp4" type="video/mp4">
+                </video>
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/flag_2-USA.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/fireplace_2-cartoon_fire_4.mp4" type="video/mp4">
+                </video>
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/sea_2-cartoon_water_3.mp4" type="video/mp4">
+                </video>
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/flag_2-LGBT.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/fireplace_1-cartoon_fire_2.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/sea_2-cartoon_water_2.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/flames-cartoon_fire_1.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/water_3-cartoon_water_4.mp4" type="video/mp4">
+                </video>
+
+                <video controls playsinline height="100%">
+                    <source src="videos/style_transfer/fireplace_2-cartoon_fire_3.mp4" type="video/mp4">
+                </video>
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    </div>
+    </section>
+    -->
+
+    <!-- <section class="section" id="BibTeX">
+        <div class="container is-max-desktop content">
+            <h2 class="title">BibTeX</h2>
+            <pre><code>@InProceedings{pajouheshgar2022dynca,
+  title     = {DyNCA: Real-Time Dynamic Texture Synthesis Using Neural Cellular Automata},
+  author    = {Pajouheshgar, Ehsan and Xu, Yitao and Zhang, Tong and S{\"u}sstrunk, Sabine},
+  booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2023},
+}</code></pre>
+        </div>
+
+    </section> -->
+
+
+    <!-- <footer class="footer">
+        <div class="columns is-centered">
+            <div class="column is-8">
+                <div class="content">
+                    <p>
+                        This website is licensed under a <a rel="license"
+                            href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+                            Commons Attribution-ShareAlike 4.0 International License</a>.
+                    </p>
+
+                    <p>
+                        Our demo is built upon the source code of<a href="https://distill.pub/selforg/2021/textures/">
+                            Self-Organizing Textures</a> paper on distill.
+                    </p>
+
+                    <p>
+                        Website source code is based on the <a href="https://nerfies.github.io/"> Nerfies</a> project
+                        page.
+                        If
+                        you want to reuse their <a href="https://github.com/nerfies/nerfies.github.io">source code</a>,
+                        please credit them appropriately.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </footer> -->
+
+</body>
+
+</html>
+
+
+<!--<script src="https://cdn.jsdelivr.net/npm/twgl-base.js@4.9.0/dist/4.x/twgl.min.js"></script>-->
+<!--<script src="https://twgljs.org/dist/5.x/twgl-full.min.js"></script>-->
+<!--<script src="twgl-full.module.js"></script>-->
+<script src="twgl.min.js"></script>
+
+<script src="dat.gui.min.js"></script>
+<script type="module">
+    import { createDemo } from './demo.js'
+
+
+    createDemo('demo');
+</script>
