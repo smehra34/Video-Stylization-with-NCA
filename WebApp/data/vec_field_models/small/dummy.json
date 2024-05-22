@@ -1,0 +1,64 @@
+{
+    "model_names": [
+        "0",
+        "270",
+        "grad_0_0",
+        "grad_0_90",
+        "circular",
+        "diverge",
+        "concentrate",
+        "hyperbolic",
+        "2block_x",
+        "2block_y",
+        "3block",
+        "4block"
+    ],
+    "layers": [
+        {
+            "scale": 0.5333806276321411,
+            "center": 0.4748231631123471,
+            "data_flatten": [
+                0.5333806276321411,
+                0.4748231631123471
+            ],
+            "data_shape": [
+                102,
+                144,
+                4
+            ],
+            "shape": [
+                51,
+                96
+            ],
+            "layout": [
+                6,
+                2
+            ],
+            "pos_emb": true,
+            "bias": true
+        },
+        {
+            "scale": 0.3781457245349884,
+            "center": 0.48364096839136966,
+            "data_flatten": [
+                0.3781457245349884,
+                0.48364096839136966
+            ],
+            "data_shape": [
+                97,
+                36,
+                4
+            ],
+            "shape": [
+                97,
+                12
+            ],
+            "layout": [
+                12,
+                1
+            ],
+            "pos_emb": false,
+            "bias": true
+        }
+    ]
+}

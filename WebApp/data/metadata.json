@@ -1,0 +1,16 @@
+{
+  "texture_names": [
+    "flames",
+    "bubbly_0101",
+    "test-model"
+  ],
+  "motion_names": [
+    "circular"
+  ],
+  "motion_images": [
+    "images/motion/circular.png"
+  ],
+  "video_names": [
+    "water_3"
+  ]
+}
