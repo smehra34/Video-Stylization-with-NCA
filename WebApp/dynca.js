@@ -17,7 +17,7 @@ Usage:
   const gui = new dat.GUI();
   const ca = new CA(gl, models_json, [W, H], gui); // gui is optional
   ca.step();
-  
+
   ca.paint(x, y, radius, modelIndex);
   ca.clearCircle(x, y, radius;
 
@@ -79,12 +79,12 @@ const PREFIX = `
     //     precision mediump sampler2D;
     //     precision mediump int;
     // #endif
-    
+
     precision highp float;
     precision highp sampler2D;
     precision highp int;
-    
-    
+
+
 
     // "Hash without Sine" by David Hoskins (https://www.shadertoy.com/view/4djSRW)
     float hash13(vec3 p3) {
@@ -104,8 +104,8 @@ const PREFIX = `
         vec2 gridSize;
         float depth, depth4;
         vec2 packScaleZero;
-        
-        // tensor.gridSize is the size of the rectangle 
+
+        // tensor.gridSize is the size of the rectangle
         // containing the channel information of the tensor
         // tensor.size is the spatial size of the original tensor
         // depth: Number of channels
@@ -118,19 +118,19 @@ const PREFIX = `
         highp vec2 p = tensor.packScaleZero;
         // p.y is the bias
         // p.x is the scaling factor
-        // the sampled texture values is between 0.0 and 1.0 (?) 
+        // the sampled texture values is between 0.0 and 1.0 (?)
         v = (v-p.y)*p.x;
         return v;
     }
     vec2 _getUV(Tensor tensor, vec2 pos, float ch) {
         // pos is the absolute coordinate
         // uv is the texture coordinate
-        
+
         ch += 0.5;
         // [tx, ty] the offset to move to get the desired channel
         float tx = floor(mod(ch, tensor.gridSize.x));
         float ty = floor(ch / tensor.gridSize.x);
-        
+
         #ifdef OURS
             // vec2 p = clamp(pos / tensor.size, 0.0, 1.0 - 1.0 / tensor.size.y); // replicate padding
             highp vec2 p = clamp(pos, vec2(0.0, 0.0), tensor.size - 0.5); // replicate padding
@@ -138,15 +138,15 @@ const PREFIX = `
             // vec2 p = clamp(pos / tensor.size, 0.0, 1.0 - 0.0 / tensor.size.y); // replicate padding
         #else
             highp vec2 p = fract(pos/tensor.size); // circular padding
-        #endif 
-        
-         
-        p += vec2(tx, ty); 
-        
+        #endif
+
+
+        p += vec2(tx, ty);
+
         p /= tensor.gridSize;
-        
-        // the output p is in range [0.0, 1.0] 
-        
+
+        // the output p is in range [0.0, 1.0]
+
         return p;
     }
     vec4 _read01(Tensor tensor, sampler2D tex, vec2 pos, float ch) {
@@ -166,17 +166,17 @@ const PREFIX = `
         // 0 0 0 1 1 1 2 2 2 3 3 3
         // 0 0 0 1 1 1 2 2 2 3 3 3
         // 0 0 0 1 1 1 2 2 2 3 3 3
-        // 4 4 4 5 5 5 6 6 6 7 7 7 
         // 4 4 4 5 5 5 6 6 6 7 7 7
         // 4 4 4 5 5 5 6 6 6 7 7 7
-        
+        // 4 4 4 5 5 5 6 6 6 7 7 7
+
         // Taking the mode with respect to the output size
         // will give us the spatial index in the original tensor
 
-        highp vec2 xy = mod(gl_FragCoord.xy, u_output.size);  
-        
+        highp vec2 xy = mod(gl_FragCoord.xy, u_output.size);
+
         return xy;
-        
+
     }
     float getOutputChannel() {
         highp vec2 xy = floor(gl_FragCoord.xy/u_output.size);
@@ -186,10 +186,10 @@ const PREFIX = `
     void setOutput(vec4 v) {
         highp vec2 p = u_output.packScaleZero;
         v = v/p.x + p.y;
-        
+
         #ifndef OURS
             v = clamp(v, -2.0, 2.0);
-        #else    
+        #else
             // v = clamp(v, -6.0, 6.0);
         #endif
         gl_FragColor = v;
@@ -205,7 +205,7 @@ const PREFIX = `
     uniform float u_angle, u_alignment;
     uniform float u_hexGrid;
     uniform highp vec2 HW;
-    
+
     mat2 rotate(float ang) {
         float s = sin(ang), c = cos(ang);
         return mat2(c, s, -s, c);
@@ -236,26 +236,26 @@ const PREFIX = `
         // skewed coords
         ai = vec2(ai.x-ai.y*u_hexGrid, ai.y*2.0+1.0);
         bi = vec2(bi.x-bi.y*u_hexGrid, bi.y*2.0);
-        return dot(a,a)<dot(b,b) ? vec4(a, ai) : vec4(b, bi);    
+        return dot(a,a)<dot(b,b) ? vec4(a, ai) : vec4(b, bi);
     }
 
     vec2 hex2screen(vec2 u) {
-        return vec2(u.x + u.y/2.0, u.y*1.732/2.0); 
+        return vec2(u.x + u.y/2.0, u.y*1.732/2.0);
     }
 
     const highp mat3 sobelX = mat3(-1.0, 0.0, 1.0, -2.0, 0.0, 2.0, -1.0, 0.0, 1.0)/8.0;
     const highp mat3 sobelY = mat3(-1.0,-2.0,-1.0, 0.0, 0.0, 0.0, 1.0, 2.0, 1.0)/8.0;
     const highp mat3 gauss = mat3(1.0, 2.0, 1.0, 2.0, 4.0-16.0, 2.0, 1.0, 2.0, 1.0)/8.0;
-    const highp mat3 sobelXhex = mat3( 0.0,    -1.0, 1.0, 
-                                       -2.0, 0.0, 2.0, 
+    const highp mat3 sobelXhex = mat3( 0.0,    -1.0, 1.0,
+                                       -2.0, 0.0, 2.0,
                                          -1.0, 1.0,        0.0)/8.0;
 
-    const highp mat3 sobelYhex = mat3( 0.0,    -2.0,-2.0, 
-                                        0.0, 0.0, 0.0, 
+    const highp mat3 sobelYhex = mat3( 0.0,    -2.0,-2.0,
+                                        0.0, 0.0, 0.0,
                                           2.0, 2.0,        0.0)/8.0;
 
-    const highp mat3 gaussHex = mat3(0.0,       2.0, 2.0, 
-                                       2.0, 4.0-16.0, 2.0, 
+    const highp mat3 gaussHex = mat3(0.0,       2.0, 2.0,
+                                       2.0, 4.0-16.0, 2.0,
                                           2.0, 2.0,        0.0)/8.0;
 
     vec4 conv3x3(vec2 xy, float inputCh, mat3 filter) {
@@ -269,14 +269,14 @@ const PREFIX = `
     }
 
     // TANH Function (Hyperbolic Tangent)
-    float tanh(float val)
-    {
-
+    float tanh(float val) {
         float tmp = exp(val);
         float tanH = (tmp - 1.0 / tmp) / (tmp + 1.0 / tmp);
         return tanH;
-        
+    }
 
+    vec3 tanh(vec3 v) {
+      return vec3(tanh(v.x), tanh(v.y), tanh(v.z));
     }
 `;
 
@@ -295,17 +295,17 @@ const PROGRAMS = {
         vec4 state4 = u_input_read(xy + vec2(1.0, 1.0), ch);
         vec4 state = 0.25 * (state1 + state2 + state3 + state4);
         setOutput(state);
-        
+
     }
     `,
     bilinear_upsample_add: `
     ${defInput('u_perception0')}
     uniform bool scale_zero;
-    
+
     void main() {
         vec2 xy = getOutputXY();
         float ch = getOutputChannel();
-        
+
         vec2 realXY = xy;
         #ifdef SPARSE_UPDATE
             if (scale_zero) {
@@ -313,12 +313,12 @@ const PROGRAMS = {
             // realXY = texture2D(u_shuffleTex, xy/u_output.size).xy*(HW.x - 1.0) + 0.5 + u_shuffleOfs;
             realXY = texture2D(u_shuffleTex, xy/u_output.size).xy + 0.5 + u_shuffleOfs;
             realXY = mod(realXY, HW);
-            } 
+            }
         #endif
-        
+
         vec4 p_current = u_perception0_read(xy, ch);
         vec2 center = floor(realXY) + 0.5;
-        
+
         vec2 p = floor((center + 0.5) / 2.0);
         // vec2 p = floor(realXY / 2.0);
 
@@ -326,18 +326,18 @@ const PROGRAMS = {
         vec2 p2 = p - vec2(1.0, 0.0) + 0.5;
         vec2 p3 = p - vec2(0.0, 1.0) + 0.5;
         vec2 p4 = p - vec2(1.0, 1.0) + 0.5;
-        
+
         // vec2 p1 = clamp(p, vec2(0.0, 0.0), u_input.size - 1.0) + 0.5;
         // vec2 p2 = clamp(p - vec2(1.0, 0.0), vec2(0.0, 0.0), u_input.size - 1.0) + 0.5;
         // vec2 p3 = clamp(p - vec2(0.0, 1.0), vec2(0.0, 0.0), u_input.size - 1.0) + 0.5;
         // vec2 p4 = clamp(p - vec2(1.0, 1.0), vec2(0.0, 0.0), u_input.size - 1.0) + 0.5;
-        
-        vec4 state1 = u_input_read(p1, ch); 
-        vec4 state2 = u_input_read(p2, ch); 
-        vec4 state3 = u_input_read(p3, ch); 
-        vec4 state4 = u_input_read(p4, ch); 
-        
-        // p = p + 0.5;        
+
+        vec4 state1 = u_input_read(p1, ch);
+        vec4 state2 = u_input_read(p2, ch);
+        vec4 state3 = u_input_read(p3, ch);
+        vec4 state4 = u_input_read(p4, ch);
+
+        // p = p + 0.5;
         float w1 = center.x + 1.0 - 2.0 * p.x;
         float w2 = center.y + 1.0 - 2.0 * p.y;
         float w3 = 2.0 * p.x + 1.0 - center.x;
@@ -350,7 +350,7 @@ const PROGRAMS = {
         // setOutput(state4);
         setOutput(0.5 * (state + p_current));
         // setOutput(p_current);
-        
+
     }
     `,
     paint: `
@@ -372,7 +372,7 @@ const PROGRAMS = {
         }
         vec2 diff = abs(xy_out-xy);
         // diff = min(diff, u_output.size-diff); // circular padding for the brush
-        if (length(diff)*u_zoom>=u_r) 
+        if (length(diff)*u_zoom>=u_r)
           discard;
         setOutput(u_brush);
 
@@ -381,7 +381,7 @@ const PROGRAMS = {
 
     uniform float u_seed, u_updateProbability;
     uniform bool scale_zero;
-    
+
     void main() {
         vec2 xy = getOutputXY();
 
@@ -391,7 +391,7 @@ const PROGRAMS = {
             return;
           }
         #endif
-        
+
         #ifdef SPARSE_UPDATE
             if (scale_zero) {
             // xy = texture2D(u_shuffleTex, xy/u_output.size).xy*255.0+0.5 + u_shuffleOfs;
@@ -406,12 +406,12 @@ const PROGRAMS = {
         float ch = getOutputChannel();
         if (ch >= u_output.depth4)
             return;
-            
-        
+
+
 
         float filterBand = floor((ch+0.5)/u_input.depth4);
         // inputCh: this is the channel idx in the original tensor
-        float inputCh = ch-filterBand*u_input.depth4; 
+        float inputCh = ch-filterBand*u_input.depth4;
         if (filterBand < 0.5) {
             setOutput(u_input_read(xy, inputCh));
         } else if (filterBand < 2.5) {
@@ -424,8 +424,8 @@ const PROGRAMS = {
                 res = res * 8.0; // We didn't normalize the kernels
             #endif
             setOutput(res);
-        
-        
+
+
         } else {
             highp vec4 res = conv3x3(xy, inputCh, gauss*(1.0-u_hexGrid) + gaussHex*u_hexGrid);
             #ifdef OURS
@@ -437,7 +437,7 @@ const PROGRAMS = {
     greyscale: `
     void main() {
         vec2 xy = getOutputXY();
-        
+
         vec4 v = texture2D(u_input_tex, xy/u_output.size);
         float grey = dot(v.rgb, vec3(0.33, 0.33, 0.33))* 2.0 - 1.0;
 
@@ -453,16 +453,16 @@ const PROGRAMS = {
     preprocess_image: `
     void main() {
         vec2 xy = getOutputXY();
-        
-        
+
+
         float ch = getOutputChannel();
         if (ch >= u_output.depth4)
             return;
 
         // inputCh: this is the channel idx in the original tensor
-        // float inputCh = ch-filterBand*u_input.depth4; 
-        float inputCh = 0.; 
-        
+        // float inputCh = ch-filterBand*u_input.depth4;
+        float inputCh = 0.;
+
         highp vec4 dx = conv3x3(xy, inputCh, sobelX*(1.0-u_hexGrid) + sobelXhex*u_hexGrid);
         highp vec4 dy = conv3x3(xy, inputCh, sobelY*(1.0-u_hexGrid) + sobelYhex*u_hexGrid);
         highp vec2 dir = getCellDirection(xy);
@@ -488,7 +488,7 @@ const PROGRAMS = {
 
 
         setOutput(res);
-        
+
     }
     `,
     dense: `
@@ -501,38 +501,39 @@ const PROGRAMS = {
     uniform highp vec2 u_layout;
     uniform highp vec2 grid_size;
     uniform bool bias, pos_emb, relu, edge_conditioning;
-    
+
     const float MAX_PACKED_DEPTH = 50.0;
-    
+
     vec4 readWeightUnscaled(vec2 p) {
         highp vec4 w = texture2D(u_weightTex, p);
         return w-u_weightCoefs.y; // centerize
     }
-    
+
     void main() {
       vec2 xy = getOutputXY();
-    
-    
+
+
       #ifndef SPARSE_UPDATE
       if (hash13(vec3(xy, u_seed)) > u_updateProbability) {
         setOutput(vec4(0.0, 0.0, 0.0, 0.0));
         return;
       }
       #endif
-      
-      
+
+
       float ch = getOutputChannel();
       if (ch >= u_output.depth4)
           return;
 
 
       float d = u_input.depth + 1.0;
+      if (edge_conditioning) {
+        d = d + 3.0;
+      }
       if (pos_emb) {
         d = d + 2.0;
       }
       float dy = 1.0 / (d) / u_layout.y;
-      // float dy = 1.0/(d)/u_layout.y;
-      // float dy = 1.0/(u_input.depth+1.0)/u_layout.y;
       vec2 p = vec2((ch+0.5)/u_output.depth4, dy*0.5);
       vec2 fuzz = (hash23(vec3(xy, u_seed+ch))-0.5)*u_fuzz;
       // vec2 fuzz = vec2(0.0, 0.0);
@@ -544,9 +545,9 @@ const PROGRAMS = {
         realXY = mod(realXY, HW);
         // realXY = texture2D(u_shuffleTex, xy/u_output.size).xy * (HW.x - 1.0) +0.5 + u_shuffleOfs;
       #endif
-      
-      
-      
+
+
+
     //   float modelIdx = u_control_read(realXY+fuzz, 0.0).x+0.5;
       float modelIdx = 0.5;
 
@@ -565,7 +566,7 @@ const PROGRAMS = {
           }
       }
       if (pos_emb) {
-        
+
         highp vec2 pos = floor(realXY);
         highp vec2 delta = vec2(0.5, 0.5) / HW;
         highp vec2 pemb = pos / HW;
@@ -573,28 +574,30 @@ const PROGRAMS = {
         pemb = rotate(-u_angle) * pemb;
         result += pemb.y * readWeightUnscaled(p); p.y += dy;
         result += pemb.x * readWeightUnscaled(p); p.y += dy;
-      
+
       };
       if (edge_conditioning) {
-        
+
         highp vec2 pos = floor(realXY);
         highp vec2 delta = vec2(0.5, 0.5) / HW;
         highp vec3 edges = u_edgemap_read(pos, 0.0).rgb;
-        // edges = vec3(0.);
+        edges = tanh(edges);
         result += edges.x * readWeightUnscaled(p); p.y += dy;
         result += edges.y * readWeightUnscaled(p); p.y += dy;
         result += edges.z * readWeightUnscaled(p); p.y += dy;
 
+        // p.y += 3.0 * dy;
+
       };
       if (bias) {
         result += readWeightUnscaled(p);  // bias
-        // p.y += dy; 
+        // p.y += dy;
       };
-      
+
       result = result*u_weightCoefs.x;
       if (relu) {
         result = max(result, 0.0);
-      
+
       }
       setOutput(result);
     }`,
@@ -621,7 +624,7 @@ const PROGRAMS = {
         }
       #else
         if (hash13(vec3(xy, u_seed)) <= u_updateProbability) {
-            update = u_update_readUV(uv);    
+            update = u_update_readUV(uv);
         }
       #endif
       setOutput(state + update * u_rate);
@@ -665,7 +668,7 @@ const PROGRAMS = {
                       vec2( dot(b,b), s*(p.y-q.y)  ));
         return -sqrt(d.x)*sign(d.y);
     }
-    
+
 
     void main() {
         vec2 xy = vec2(uv.x, 1.0-uv.y);
@@ -675,36 +678,36 @@ const PROGRAMS = {
                 vec3 rgb = vec3(0.0, 0.0, 0.0);
                 if (xy.x <= 0.5 || xy.y <= 0.5) {
                     rgb = texture2D(u_input_tex, xy).rgb;
-                    
+
 
                 } else {
-                    
+
                     float r = texture2D(u_input_tex, xy - vec2(0.5, 0.5)).a;
                     float g = texture2D(u_input_tex, xy - vec2(0.5, 0.0)).a;
                     float b = texture2D(u_input_tex, xy - vec2(0.0, 0.5)).a;
                     rgb = vec3(r, g, b);
 
                 }
-                
-                
 
-                #ifdef OURS                                    
+
+
+                #ifdef OURS
                     rgb = clamp(rgb + 0.5, 0.0, 1.0);
                 #else
                     rgb = rgb / 2.0 + 0.5;
                 #endif
-                
+
                 gl_FragColor = vec4(rgb, 1.0);
- 
+
             } else {
                 gl_FragColor = texture2D(u_input_tex, xy);
-                #ifdef OURS                    
+                #ifdef OURS
                     gl_FragColor = clamp(gl_FragColor + 0.5, 0.0, 1.0);
                 #else
                     gl_FragColor = gl_FragColor / 2.0 + 0.5;
                 #endif
                 gl_FragColor.a = 1.0;
-            } 
+            }
         } else {
             xy = (xy + vec2(0.5)*(u_zoom-1.0))/u_zoom;
             xy *= u_input.size;
@@ -721,12 +724,12 @@ const PROGRAMS = {
             #else
                 vec3 cellRGB = u_input_read(xy, 0.0).rgb/2.0+0.5;
             #endif
-            
+
             vec3 rgb = cellRGB;
             if (3.0 < u_zoom) {
                 vec2 dir = getCellDirection(floor(xy)+0.5);
                 float s = dir.x, c = dir.y;
-                fp = mat2(c, s, -s, c) * fp;    
+                fp = mat2(c, s, -s, c) * fp;
                 float r = length(fp);
                 float fade = clip01((u_zoom-3.0)/3.0);
                 float m = 1.0;//1.0-min(r*r*r, 1.0)*fade;
@@ -760,7 +763,7 @@ const PROGRAMS = {
                     float cr = length(u_input.size/2.0-0.5-xy);
                     rgb += peak(cr-1.5, 0.5/u_zoom)*fade*u_perceptionCircle;
                 }
-            } 
+            }
 
             gl_FragColor = vec4(clamp(rgb, 0.0, 1.0), 1.0);
         }
@@ -838,6 +841,7 @@ function createDenseInfo(gl, params) {
     var ch_in = in_n;
     ch_in = info.pos_emb ? ch_in - 2 : ch_in;
     ch_in = info.bias ? ch_in - 1 : ch_in;
+    ch_in = info.edge_conditioning ? ch_in - 3 : ch_in;
     info.in_n = ch_in;
     info.coefs = [params.scale, center];
 
