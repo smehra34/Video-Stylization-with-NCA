@@ -1,10 +1,11 @@
 {
     "texture_names": [
         "pencil-sketch",
-        "deep-dream-eyes",
-        "starry-night",
         "japanese-wave-art",
-        "comic"
+        "gta5",
+        "comic",
+        "starry-night",
+        "deep-dream-eyes"
     ],
     "motion_names": [
         "circular"
