@@ -172,7 +172,9 @@ export function createDemo(divId, imageCapture) {
       texture.className = 'texture-square';
       texture.onclick = () => {
         // removeOverlayIcon();
-        currentTexture.style.borderColor = "white";
+        if (currentTexture){
+          currentTexture.style.borderColor = "white";
+        }
         currentTexture = texture;
         texture.style.borderColor = "rgb(245 140 44)";
         if (!window.matchMedia('(min-width: 500px)').matches && navigator.userAgent.includes("Chrome")) {
