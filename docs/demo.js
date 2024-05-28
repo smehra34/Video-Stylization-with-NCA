@@ -28,12 +28,12 @@ export function createDemo(divId, imageCapture) {
   let gl = canvas.getContext("webgl2");
 
 
-  const test_canvas = $('#image-canvas');
-  test_canvas.width = W * 4; //so we can render hexells
-  test_canvas.height = H * 4;
-  let test_gl = test_canvas.getContext("webgl2");
-
-  let imageProcessor = new ImagePreprocessor(test_gl, [W * 6, H * 6]);
+  // const test_canvas = $('#image-canvas');
+  // test_canvas.width = W * 4; //so we can render hexells
+  // test_canvas.height = H * 4;
+  // let test_gl = test_canvas.getContext("webgl2");
+  //
+  // let imageProcessor = new ImagePreprocessor(test_gl, [W * 6, H * 6]);
 
   if (!gl) {
     console.log('your browser/OS/drivers do not support WebGL2');
@@ -55,11 +55,11 @@ export function createDemo(divId, imageCapture) {
   }
 
   gl.disable(gl.DITHER);
-  test_gl.disable(test_gl.DITHER);
+  // test_gl.disable(test_gl.DITHER);
 
 
   twgl.addExtensionsToContext(gl);
-  twgl.addExtensionsToContext(test_gl);
+  // twgl.addExtensionsToContext(test_gl);
 
   const maxZoom = 32.0;
 
@@ -485,7 +485,7 @@ export function createDemo(divId, imageCapture) {
   let first = true;
 
   function render(time) {
-    imageProcessor.render();
+    // imageProcessor.render();
     if (!isInViewport(canvas)) {
       requestAnimationFrame(render);
       return;
