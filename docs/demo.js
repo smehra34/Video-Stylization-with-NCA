@@ -18,7 +18,7 @@ export function createDemo(divId, imageCapture) {
   // const W = 256, H = 256;
   const resolutions = [64, 96, 128, 192, 256];
   var W = 128, H = 128;
-  var last_resolution_idx = 0;
+  var last_resolution_idx = 2;
   let ca = null;
   let paused = false;
 
