@@ -1,10 +1,14 @@
 {
     "texture_names": [
-        "pencil-sketch",
+        "mosaic",
         "japanese-wave-art",
-        "gta5",
-        "comic",
         "starry-night",
+        "comic",
+        "textured-painting",
+        "smooth-painting",
+        "spilled-paint",
+        "gta5",
+        "pencil-sketch",
         "deep-dream-eyes"
     ],
     "motion_names": [
