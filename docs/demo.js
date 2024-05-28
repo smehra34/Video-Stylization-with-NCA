@@ -346,7 +346,7 @@ export function createDemo(divId, imageCapture) {
     $("#origtex").style.background = "url('" + params.texture_img + "')";
     $("#origtex").style.backgroundSize = "100%100%";
     let dtd = document.createElement('p')
-    dtd.innerHTML = "Texture Name: <br>" + params.texture_name
+    dtd.innerHTML = "<b>Current Style: </b><em>" + params.texture_name + "</em>"
     // dtd.href = "https://www.robots.ox.ac.uk/~vgg/data/dtd/"
     $("#texhinttext").innerHTML = '';
     $("#texhinttext").appendChild(dtd);
@@ -363,9 +363,7 @@ export function createDemo(divId, imageCapture) {
     let motionGridBox = $('#motion');
     motionGridBox.innerHTML = '<div class="whitespace"></div>';
 
-    $("#origmot").style.background = '';
     $("#origtex").style.background = '';
-    $("#mothinttext").innerHTML = '';
     $("#texhinttext").innerHTML = '';
 
   }

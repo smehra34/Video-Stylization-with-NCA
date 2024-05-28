@@ -227,7 +227,6 @@
                 <div class="l-body-outset grid" id="demo">
                     <div>
                         <canvas id="demo-canvas"></canvas>
-                        <video id="webcamVideo" autoplay></video>
                         <img id="capturedFrame">
                         <!-- <canvas id="image-canvas"></canvas> -->
 
@@ -357,14 +356,17 @@
                             <!-- a hacky way to add some padding, so the fadeout doesn't cover items in the scroll. -->
                             <div class="whitespace"></div>
                         </div>
-                        <div id="texhint">
 
-                            <div id="origtex">
+                        <div id="texhint">
+                            <div class="column" id="leftColumn">
+                                <video id="webcamVideo" autoplay></video>
                             </div>
-                            <span id="texhinttext"></span>
-                            <div id="origmot"></div>
-                            <span id="mothinttext"></span>
+                            <div class="column" id="rightColumn">
+                                <div id="origtex"></div>
+                            </div>
                         </div>
+
+                        <span id="texhinttext"></span>
 
 
                     </div>
