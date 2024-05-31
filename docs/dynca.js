@@ -950,6 +950,8 @@ export class DyNCA {
 
 
         this.videoElement = document.getElementById('webcamVideo');
+        this.videoElement.style.webkitTransform = "scaleX(-1)";
+        this.videoElement.style.transform = "scaleX(-1)";
 
         navigator.mediaDevices.getUserMedia({
             video: {
@@ -1276,85 +1278,3 @@ export class DyNCA {
     }
 }
 
-export class ImagePreprocessor {
-    constructor(gl, gridSize) {
-        // models is basically the json file
-
-        self = this;
-        this.gl = gl;
-
-
-        this.gridSize = gridSize || [96, 96];
-
-        this.rotationAngle = 0.0;
-        this.rate = 1.0;
-        this.alignment = 0;
-        this.fuzz = 8.0;
-        this.perceptionCircle = 0.0;
-        this.arrowsCoef = 0.0;
-        this.visMode = 'color';
-        this.hexGrid = false;
-
-        this.program = twgl.createProgramInfo(this.gl, [vs_code, fs_code]);
-
-        const defs = (this.our_version ? '#define OURS\n' : '') + (this.shuffledMode ? '#define SPARSE_UPDATE\n' : '');
-
-        // this.progs = createPrograms(gl, defs);
-
-        // representing vertices of a square with two triangles
-        this.quad = twgl.createBufferInfoFromArrays(gl, {
-            position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
-        });
-        this.streamReady = false;
-
-        navigator.getUserMedia = (navigator.getUserMedia ||
-            navigator.webkitGetUserMedia ||
-            navigator.mozGetUserMedia ||
-            navigator.msGetUserMedia);
-
-
-        this.videoElement = document.getElementById('webcamVideo');
-
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                frameRate: { ideal: 20, max: 30 },
-                width: this.gridSize[0], height: this.gridSize[1]
-            }
-        }).then((stream) => {
-            this.videoElement.srcObject = stream;
-            this.streamReady = true;
-        });
-
-        this.image_texture = twgl.createTexture(gl, {
-            src: [0, 0, 255],
-            format: gl.RGB,
-            min: gl.LINEAR,
-            wrap: gl.CLAMP_TO_EDGE,
-        });
-
-    }
-
-
-    render() {
-        const gl = this.gl;
-        if (this.streamReady) {
-            gl.bindTexture(gl.TEXTURE_2D, this.image_texture)
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.videoElement);
-        }
-
-
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-
-        gl.useProgram(this.program.program);
-
-        twgl.setBuffersAndAttributes(gl, this.program, this.quad);
-        twgl.setUniforms(this.program, {
-            u_tex: this.image_texture,
-        });
-        twgl.drawBufferInfo(gl, this.quad);
-    }
-
-
-}

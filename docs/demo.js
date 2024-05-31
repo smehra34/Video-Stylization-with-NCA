@@ -1,4 +1,4 @@
-import { DyNCA, ImagePreprocessor } from './dynca.js'
+import { DyNCA } from './dynca.js'
 
 function isInViewport(element) {
   var rect = element.getBoundingClientRect();
@@ -172,7 +172,7 @@ export function createDemo(divId, imageCapture) {
       texture.className = 'texture-square';
       texture.onclick = () => {
         // removeOverlayIcon();
-        if (currentTexture){
+        if (currentTexture) {
           currentTexture.style.borderColor = "white";
         }
         currentTexture = texture;
