@@ -48,6 +48,19 @@ def scan_folder_for_images(folder_path):
     image_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.lower().endswith(supported_extensions)]
     return image_files
 
+# Scan folder and subdirectories for images
+def scan_folder_for_images_recursive(folder_path):
+    """
+    Scans the specified folder and all its subdirectories recursively, returning a list of image file paths.
+    """
+    supported_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif')
+    image_files = []
+    for root, _, files in os.walk(folder_path):
+        for f in files:
+            if f.lower().endswith(supported_extensions):
+                image_files.append(os.path.join(root, f))
+    return image_files
+
 def save_setup_images(target_reference_img, target_reference_gs, target_appearance_img, exp_dir):
     """ Save the provided images into an experiment-specific subfolder named 'setup_images'. """
     directory = os.path.join(exp_dir, 'setup_images')

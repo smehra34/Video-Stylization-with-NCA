@@ -38,6 +38,11 @@ def setup_args():
     parser.add_argument('--exp_name', type=str, default='no-positional-encoding-with-motion-loss', help='Name of the experiment')
     parser.add_argument('--img_size', type=int, nargs=2, default=[256, 256], help='Image size during training')
     parser.add_argument('--style_name', type=str, default='starry-night', help='Name of the style image')
+    parser.add_argument("--dataset_root", type=str, default='data/Dataset/', help='Directory containing dataset')
+    parser.add_argument("--target_images", type=str, default='full', help='Directory name containing target images')
+
+    parser.add_argument('--no_wandb', action='store_true', help='Disable logging to wandb')
+    parser.add_argument('--no_index', action='store_true', help='Do not append index to description')
 
     # NCA related settings
 
@@ -95,16 +100,20 @@ def setup_args():
 
 def main():
     args = setup_args()
-    experiment_index = get_next_experiment_index('experiments')
-    args.exp_description = f"{args.exp_name}_{experiment_index}"
+    if not args.no_index:
+        experiment_index = get_next_experiment_index('experiments')
+        args.exp_description = f"{args.exp_name}_{experiment_index}"
+    else:
+        args.exp_description = f"{args.exp_name}"
 
-    wandb.init(
-        # set the wandb project where this run will be logged
-        project='Condiitional-NCA',
-        entity='video_stylization_with_NCAs',
-        config = {'experiment_index': experiment_index, **vars(args)},
-        name = args.exp_description
-        )
+    if not args.no_wandb:
+        wandb.init(
+            # set the wandb project where this run will be logged
+            project='Condiitional-NCA',
+            entity='video_stylization_with_NCAs',
+            config = {'experiment_index': experiment_index, **vars(args)},
+            name = args.exp_description
+            )
 
     DEVICE = torch.device(args.DEVICE)
 
@@ -122,9 +131,9 @@ def main():
                                                img_size=args.img_size,
                                                batch_size=args.batch_size) * 2.0 - 1.0  # [-1.0, 1.0]
     # Load the target appearance reference
-    target_images_dir = 'data/Target_images/'
+    target_images_dir = os.path.join(args.dataset_root, args.target_images)
     ensure_dir(target_images_dir)
-    target_images_paths = scan_folder_for_images(target_images_dir)
+    target_images_paths = scan_folder_for_images_recursive(target_images_dir)
     target_reference_img = preprocess_target_images(target_images_paths, img_size=args.img_size)  # [C, T, H, W]
     target_appearance_img = target_appearance_img.to(DEVICE)
     target_reference_img = target_reference_img.permute(1,0,2,3).to(DEVICE)
@@ -244,12 +253,6 @@ def main():
 
             batch_loss, batch_loss_log_dict, summary = DynamicTextureLoss(input_dict, return_summary=True)
 
-            #if i % args.save_every == 0:
-        #        batch_loss, batch_loss_log_dict, summary = DynamicTextureLoss(input_dict, return_summary=True)
-    #            print('batch_loss', batch_loss)
-#                print('batch_loss_log_dict', batch_loss_log_dict)
-#                print('summary', summary)
-
             with torch.no_grad():
                 batch_loss.backward()
                 if torch.isnan(batch_loss):
@@ -270,11 +273,13 @@ def main():
 
                 display_dict = copy.deepcopy(batch_loss_log_dict)
                     # Assuming 'batch_loss', 'batch_loss_log_dict', and 'summary' are obtained during your training loop
-                wandb.log({
-                    "batch_loss": batch_loss.item(),  # Log the scalar value of batch loss
-                    "epoch": i,
-                    **display_dict,            # Expand the dictionary to log each component separately
-                })
+                
+                if not args.no_wandb:
+                    wandb.log({
+                        "batch_loss": batch_loss.item(),  # Log the scalar value of batch loss
+                        "epoch": i,
+                        **display_dict,            # Expand the dictionary to log each component separately
+                    })
 
                 if i % args.save_every == 0:
 
@@ -286,40 +291,27 @@ def main():
                     ref_img_show = save_train_image(aux_imgs_vis.detach().cpu().numpy(), None, return_img = True)
                     wandb.log({"Generated Image": wandb.Image(img_show)})
                     wandb.log({"Reference Image": wandb.Image(ref_img_show)})
+                    
+                    if not args.no_wandb:
+                        # Log generated and target flow vector fields
+                        if 'vector_field_motion-generated_flow_vector_field' in summary:
+                            # Directly log the PIL image, assuming it is correctly formatted
+                            generated_flow_vector_field_img = wandb.Image(summary['vector_field_motion-generated_flow_vector_field'])
+                            wandb.log({"Generated Flow Vector Field": generated_flow_vector_field_img})
 
-                    # Log generated and target flow vector fields
-                    if 'vector_field_motion-generated_flow_vector_field' in summary:
-                        # Directly log the PIL image, assuming it is correctly formatted
-                        generated_flow_vector_field_img = wandb.Image(summary['vector_field_motion-generated_flow_vector_field'])
-                        wandb.log({"Generated Flow Vector Field": generated_flow_vector_field_img})
+                        if 'vector_field_motion-target_flow_vector_field' in summary:
+                            # Directly log the PIL image, assuming it is correctly formatted
+                            target_flow_vector_field_img = wandb.Image(summary['vector_field_motion-target_flow_vector_field'])
+                            wandb.log({"Target Flow Vector Field": target_flow_vector_field_img})
 
-                    if 'vector_field_motion-target_flow_vector_field' in summary:
-                        # Directly log the PIL image, assuming it is correctly formatted
-                        target_flow_vector_field_img = wandb.Image(summary['vector_field_motion-target_flow_vector_field'])
-                        wandb.log({"Target Flow Vector Field": target_flow_vector_field_img})
-
-                #else:
-            #        batch_loss, batch_loss_log_dict, _ = DynamicTextureLoss(input_dict, return_summary=False)
-            #        summary = {}
 
 
     except (KeyboardInterrupt, torch.cuda.OutOfMemoryError) as e:
         print(e)
         print('Saving latest model checkpoint...')
 
-    torch.save(nca_model, model_save_path + f'model_{i}.pth')
+        torch.save(nca_model, model_save_path + f'model_{i}.pth')
 
-    video_save_path = f'{exp_dir}/videos/'
-    ensure_dir(video_save_path)
-    ## Generate Videos
-    generate_control_videos(style_img_path, video_save_path, size_factor=2.0,
-                              step_n=int(args.nca_base_num_steps), steps_per_frame=1,
-                              nca_model=nca_model, nca_size_x=nca_size_x,
-                              nca_size_y=nca_size_y, DEVICE=DEVICE)
-    evaluate_folder_of_videos('data/Evaluation', video_save_path, size_factor=2.0,
-                              step_n=int(args.nca_base_num_steps), steps_per_frame=1,
-                              nca_model=nca_model, nca_size_x=nca_size_x,
-                              nca_size_y=nca_size_y, DEVICE=DEVICE)
 
 if __name__ == '__main__':
     main()
