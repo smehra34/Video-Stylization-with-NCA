@@ -100,8 +100,8 @@ def setup_args():
 
 def main():
     args = setup_args()
+    experiment_index = get_next_experiment_index('experiments')
     if not args.no_index:
-        experiment_index = get_next_experiment_index('experiments')
         args.exp_description = f"{args.exp_name}_{experiment_index}"
     else:
         args.exp_description = f"{args.exp_name}"
@@ -117,7 +117,7 @@ def main():
 
     DEVICE = torch.device(args.DEVICE)
 
-    exp_dir = f'experiments/experiment_{experiment_index}'
+    exp_dir = f'experiments/experiment_{args.exp_description}'
     model_save_path = f'{exp_dir}/models/'
     ensure_dir(model_save_path)
 
