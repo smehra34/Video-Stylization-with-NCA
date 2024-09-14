@@ -196,12 +196,11 @@ def main():
     loss_log_dict = defaultdict(list)
     new_size = (nca_size_x, nca_size_y)
 
-    pbar = range(args.max_iterations)
+    pbar = tqdm(range(args.max_iterations))
 
     ###### Training loop ######
     try:
         for i in pbar:
-            print(i)
             np.random.seed(i + 424)
             torch.manual_seed(i + 424)
             torch.cuda.manual_seed_all(i + 424)
