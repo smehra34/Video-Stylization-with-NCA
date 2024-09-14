@@ -285,14 +285,15 @@ def main():
 
                     # save model checkpoint
                     torch.save(nca_model, model_save_path + f'model_checkpoint.pth')
-
-                    # Log the generated and reference images
-                    img_show = save_train_image(generated_image_vis.detach().cpu().numpy(), None, return_img = True)
-                    ref_img_show = save_train_image(aux_imgs_vis.detach().cpu().numpy(), None, return_img = True)
-                    wandb.log({"Generated Image": wandb.Image(img_show)})
-                    wandb.log({"Reference Image": wandb.Image(ref_img_show)})
                     
                     if not args.no_wandb:
+
+                        # Log the generated and reference images
+                        img_show = save_train_image(generated_image_vis.detach().cpu().numpy(), None, return_img = True)
+                        ref_img_show = save_train_image(aux_imgs_vis.detach().cpu().numpy(), None, return_img = True)
+                        wandb.log({"Generated Image": wandb.Image(img_show)})
+                        wandb.log({"Reference Image": wandb.Image(ref_img_show)})
+                    
                         # Log generated and target flow vector fields
                         if 'vector_field_motion-generated_flow_vector_field' in summary:
                             # Directly log the PIL image, assuming it is correctly formatted

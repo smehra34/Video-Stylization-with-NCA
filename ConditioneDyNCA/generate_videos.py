@@ -113,22 +113,22 @@ def main():
         nca_perception_scales = [0]
     assert nca_perception_scales[0] == 0
 
-    nca_min_steps, nca_max_steps = args.nca_step_range
+    # nca_min_steps, nca_max_steps = args.nca_step_range
 
-    nca_model = DyNCA(c_in=args.nca_c_in, c_out=3, fc_dim=args.nca_fc_dim,
-                    seed_mode=args.nca_seed_mode,
-                    conditioning=args.nca_conditioning,
-                    edge_transform=args.edge_transform,
-                    padding_mode=args.nca_padding_mode,
-                    perception_scales=nca_perception_scales,
-                    device=DEVICE)
-
-
-    with torch.no_grad():
-        nca_pool = nca_model.seed(args.nca_pool_size, size=(nca_size_x, nca_size_y))
+    # nca_model = DyNCA(c_in=args.nca_c_in, c_out=3, fc_dim=args.nca_fc_dim,
+    #                 seed_mode=args.nca_seed_mode,
+    #                 conditioning=args.nca_conditioning,
+    #                 edge_transform=args.edge_transform,
+    #                 padding_mode=args.nca_padding_mode,
+    #                 perception_scales=nca_perception_scales,
+    #                 device=DEVICE)
 
 
-    nca_model.load_state_dict(torch.load(model_save_path + f'model_checkpoint.pth'))
+    # with torch.no_grad():
+    #     nca_pool = nca_model.seed(args.nca_pool_size, size=(nca_size_x, nca_size_y))
+
+
+    nca_model = torch.load(model_save_path + f'model_checkpoint.pth')
     print('Model loaded from:', model_save_path + f'model_checkpoint.pth')
     param_n = sum(p.numel() for p in nca_model.parameters())
     print('DyNCA param count:', param_n)
