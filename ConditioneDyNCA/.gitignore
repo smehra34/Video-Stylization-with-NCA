@@ -4,10 +4,10 @@
 
 *.pth
 *.pt
-*.mp4
+# *.mp4
 *.avi
 *.zip
-*.png
+# *.png
 
 pretrained_models/
 out/
