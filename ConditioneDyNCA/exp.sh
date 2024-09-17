@@ -35,7 +35,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description comic-baseline_full --style_name comic
+python generate_videos.py --exp_description comic-baseline_full --style_name comic
 
 
 # python train.py --style_name starry-night\
@@ -48,7 +48,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description starry-night-baseline_full --style_name starry-night
+python generate_videos.py --exp_description starry-night-baseline_full --style_name starry-night
 
 # python train.py --style_name pencil-sketch\
 #     --exp_name pencil-sketch-baseline_full \
@@ -60,7 +60,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description pencil-sketch-baseline_full --style_name pencil-sketch
+python generate_videos.py --exp_description pencil-sketch-baseline_full --style_name pencil-sketch
 
 # # # 5 Images Dataset
 
@@ -74,7 +74,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description comic-baseline_5_images --style_name comic
+python generate_videos.py --exp_description comic-baseline_5_images --style_name comic
 
 # python train.py --style_name starry-night\
 #     --exp_name starry-night-baseline_5_images \
@@ -86,7 +86,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description starry-night-baseline_5_images --style_name starry-night
+python generate_videos.py --exp_description starry-night-baseline_5_images --style_name starry-night
 
 # python train.py --style_name pencil-sketch\
 #     --exp_name pencil-sketch-baseline_5_images \
@@ -98,7 +98,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description pencil-sketch-baseline_5_images --style_name pencil-sketch
+python generate_videos.py --exp_description pencil-sketch-baseline_5_images --style_name pencil-sketch
 
 # python train.py --style_name japanese-wave-art\
 #     --exp_name japanese-wave-art-baseline_5_images \
@@ -110,7 +110,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description japanese-wave-art-baseline_5_images --style_name japanese-wave-art
+python generate_videos.py --exp_description japanese-wave-art-baseline_5_images --style_name japanese-wave-art
 
 
 # # # 2 Images Dataset
@@ -125,7 +125,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description comic-baseline_2_images --style_name comic
+python generate_videos.py --exp_description comic-baseline_2_images --style_name comic
 
 # python train.py --style_name starry-night\
 #     --exp_name starry-night-baseline_2_images \
@@ -137,7 +137,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description starry-night-baseline_2_images --style_name starry-night
+python generate_videos.py --exp_description starry-night-baseline_2_images --style_name starry-night
 
 # python train.py --style_name pencil-sketch\
 #     --exp_name pencil-sketch-baseline_2_images \
@@ -149,7 +149,7 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description pencil-sketch-baseline_2_images --style_name pencil-sketch
+python generate_videos.py --exp_description pencil-sketch-baseline_2_images --style_name pencil-sketch
 
 # python train.py --style_name japanese-wave-art\
 #     --exp_name japanese-wave-art-baseline_2_images \
@@ -161,4 +161,4 @@ python generate_videos.py --exp_description server_test_run --style_name comic
 #     --auxillary_loss_weight .1 \
 #     --overflow_loss_weight 1000.0
 
-# python generate_videos.py --exp_description japanese-wave-art-baseline_2_images --style_name japanese-wave-art
+python generate_videos.py --exp_description japanese-wave-art-baseline_2_images --style_name japanese-wave-art
